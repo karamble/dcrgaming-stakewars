@@ -137,6 +137,13 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 	if replay.Hash(cs[0].Snapshot().Head) != replay.Hash(cs[1].Snapshot().Head) {
 		t.Fatal("genesis differs")
 	}
+	if players == 2 && !refunds {
+		before := len(fake.Sent())
+		time.Sleep(6 * time.Second)
+		if after := len(fake.Sent()); after != before {
+			t.Fatalf("idle table retransmitted %d BR frame(s)", after-before)
+		}
+	}
 	if refunds {
 		// Restart each game alone. Recovery remains an operator action in the bridge.
 		for _, stop := range stops {

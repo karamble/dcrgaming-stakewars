@@ -66,7 +66,6 @@ type liveMatch struct {
 	world   seating.World
 	mine    uint8
 	funded  bool
-	sentAt  time.Time
 	settled string
 }
 type Controller struct {
@@ -86,7 +85,6 @@ type Controller struct {
 	activeJobs   map[string]bool
 	workers      sync.WaitGroup
 	selected     string
-	lastResync   time.Time
 	financialAt  map[string]time.Time
 	financial    map[string]sdk.TableSnapshot
 }
@@ -229,6 +227,18 @@ func (c *Controller) job(ctx context.Context, match, kind string, f func(context
 }
 func (c *Controller) Run(ctx context.Context) error {
 	sessionLog.Info("Session connected; restoring tables and signed turns")
+	// Install durable table routes before subscribing. BR replays group-chat
+	// history immediately, and those one-shot frames must not race the first
+	// periodic UI refresh after a restart.
+	records, err := c.tables.LoadTables()
+	if err != nil {
+		return err
+	}
+	c.rules.mu.Lock()
+	for _, record := range records {
+		c.rules.records[record.Match] = record
+	}
+	c.rules.mu.Unlock()
 	defer sessionLog.Info("Session stopped")
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -250,10 +260,6 @@ func (c *Controller) Run(ctx context.Context) error {
 			tickCtx, tickDone := context.WithTimeout(ctx, 8*time.Second)
 			if tip, err := c.runtime.Chain(tickCtx); err == nil {
 				c.runtime.Tick(tickCtx, tip.Height)
-			}
-			if time.Since(c.lastResync) > 5*time.Second {
-				c.lastResync = time.Now()
-				c.runtime.Resync(tickCtx)
 			}
 			tickDone()
 			c.refresh(ctx)
@@ -448,12 +454,6 @@ func (c *Controller) refresh(ctx context.Context) {
 		v.Phase = "playing"
 		v.Status = "Playing · signed turns over Bison Relay"
 		v.Settlement = m.settled
-		if time.Since(m.sentAt) > 3*time.Second {
-			m.sentAt = time.Now()
-			call, done = context.WithTimeout(ctx, 3*time.Second)
-			c.setError(c.runtime.Send(call, rec.Match, "w.sync", struct{ Turn uint32 }{v.Head.Turn}, gw.ClassState))
-			done()
-		}
 		if v.Head.Phase == sim.Ended {
 			v.Phase = "finished"
 			v.Status = "Match finished · collecting payout signatures"
@@ -505,13 +505,12 @@ func (c *Controller) prepareWorld(ctx context.Context, rec sdk.TableRecord) erro
 			return errors.New("seating block changed; recover deposits")
 		}
 		c.rules.mu.Lock()
-		own := c.rules.worlds[rec.Match]
 		problem := c.rules.problems[rec.Match]
 		c.rules.mu.Unlock()
 		if problem != "" {
 			return errors.New(problem)
 		}
-		return c.runtime.Send(ctx, rec.Match, "w.world", own, gw.ClassState)
+		return nil
 	}
 	tip, e := c.runtime.Chain(ctx)
 	if e != nil {
