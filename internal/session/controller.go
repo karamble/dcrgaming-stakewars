@@ -87,6 +87,8 @@ type Controller struct {
 	workers      sync.WaitGroup
 	selected     string
 	lastResync   time.Time
+	financialAt  map[string]time.Time
+	financial    map[string]sdk.TableSnapshot
 }
 
 func Open(ctx context.Context, cfg bridgeconn.Config, dir string) (*Controller, error) {
@@ -145,7 +147,7 @@ func New(bridge *transport.Bridge, dir string) (*Controller, error) {
 		return nil, e
 	}
 	r.runtime = rt
-	c := &Controller{runtime: rt, rules: r, bridge: bridge, tables: tables, dir: dir, reservations: reservations, matches: map[string]*liveMatch{}, turns: make(chan turnCommand, 16), actions: make(chan string, 16), done: make(chan operation, 32), jobs: map[string]bool{}, activeJobs: map[string]bool{}}
+	c := &Controller{runtime: rt, rules: r, bridge: bridge, tables: tables, dir: dir, reservations: reservations, matches: map[string]*liveMatch{}, turns: make(chan turnCommand, 16), actions: make(chan string, 16), done: make(chan operation, 32), jobs: map[string]bool{}, activeJobs: map[string]bool{}, financialAt: map[string]time.Time{}, financial: map[string]sdk.TableSnapshot{}}
 	if _, e = rt.ResumeWithReport(); e != nil {
 		rt.Close()
 		return nil, e
@@ -196,11 +198,16 @@ func (c *Controller) Accepted(match string, turn uint32) (turnbatch.Batch, error
 	return turnbatch.Decode(bytes.NewReader(raw))
 }
 func (c *Controller) setError(e error) {
-	if e != nil {
+	if e == nil {
+		return
+	}
+	message := e.Error()
+	c.mu.Lock()
+	same := c.view.Error == message
+	c.view.Error = message
+	c.mu.Unlock()
+	if !same {
 		sessionLog.Warnf("Session operation: %v", e)
-		c.mu.Lock()
-		c.view.Error = e.Error()
-		c.mu.Unlock()
 	}
 }
 func (c *Controller) job(ctx context.Context, match, kind string, f func(context.Context) error) {
@@ -310,21 +317,43 @@ func (c *Controller) refresh(ctx context.Context) {
 	c.rules.mu.Unlock()
 	connection, _ := c.bridge.ConnectionStatus()
 	v := View{Connected: connection == transport.Subscribed, Status: "Connected · waiting for a dcrpulse invitation"}
+	selected := c.selected
+	if selected == "" {
+		var latest uint32
+		for _, rec := range records {
+			if !rec.RecoveryOnly && !rec.Aborted && (selected == "" || rec.Terms.Until > latest) {
+				selected, latest = rec.Match, rec.Terms.Until
+			}
+		}
+	}
 	chainCtx, chainDone := context.WithTimeout(ctx, 3*time.Second)
 	if tip, err := c.runtime.Chain(chainCtx); err == nil && tip.Height > 0 {
 		v.Height = uint32(tip.Height)
 	}
 	chainDone()
 	for _, rec := range records {
-		call, done := context.WithTimeout(ctx, 4*time.Second)
-		snap, e := c.runtime.RefreshDeposits(call, rec.Match)
-		done()
+		snap, e := c.runtime.Snapshot(rec.Match)
 		if e != nil {
 			c.setError(e)
 			continue
 		}
+		if cached, ok := c.financial[rec.Match]; ok {
+			snap.Deposits = cached.Deposits
+		}
+		if rec.Match == selected && time.Since(c.financialAt[rec.Match]) >= 5*time.Second {
+			c.financialAt[rec.Match] = time.Now()
+			call, done := context.WithTimeout(ctx, 4*time.Second)
+			refreshed, refreshErr := c.runtime.RefreshDeposits(call, rec.Match)
+			done()
+			if refreshErr != nil {
+				c.setError(refreshErr)
+			} else {
+				snap = refreshed
+				c.financial[rec.Match] = refreshed
+			}
+		}
 		v.Tables = append(v.Tables, snap)
-		if v.Match != "" || (c.selected != "" && c.selected != rec.Match) {
+		if v.Match != "" || selected != rec.Match {
 			continue
 		} // one foreground match; all deposits remain in dashboard
 		v.Match = rec.Match
@@ -358,7 +387,7 @@ func (c *Controller) refresh(ctx context.Context) {
 			continue
 		}
 		v.Mine = uint8(mine)
-		call, done = context.WithTimeout(ctx, 4*time.Second)
+		call, done := context.WithTimeout(ctx, 4*time.Second)
 		e = c.runtime.CheckAdmissionBonds(call, rec.Match)
 		if e == nil {
 			v.AdmissionChecked = true

@@ -4,12 +4,21 @@ package main
 
 import (
 	"fmt"
+	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
 	"github.com/karamble/dcrstakewars/internal/bridgeconn"
 	"github.com/karamble/dcrstakewars/internal/tablelobby"
 	"github.com/karamble/dcrstakewars/pkg/render"
 	"github.com/karamble/dcrstakewars/pkg/replay"
 	"github.com/karamble/dcrstakewars/pkg/sim"
 )
+
+func liveInvitation(r sdk.TableRecord) bridgeconn.Invitation {
+	return bridgeconn.Invitation{
+		SID: r.Match, GCID: r.GCID, Seats: r.Terms.Seats,
+		BuyInAtoms: r.Terms.BuyInAtoms, CSVBlocks: r.Terms.CSVBlocks, Until: r.Terms.Until,
+		AdmissionAtoms: r.Terms.BondAtoms, AdmissionBlocks: r.Terms.BondLockBlocks,
+	}
+}
 
 func (g *game) pollSession() {
 	if g.session == nil {
@@ -32,7 +41,7 @@ func (g *game) pollSession() {
 		}
 		r := s.Record
 		fresh := g.tableState == nil || g.tableState.Invite.SID != v.Match
-		t := tablelobby.New(bridgeconn.Invitation{SID: r.Match, GCID: r.GCID, Seats: r.Terms.Seats, BuyInAtoms: r.Terms.BuyInAtoms, CSVBlocks: r.Terms.CSVBlocks, Until: r.Terms.Until})
+		t := tablelobby.New(liveInvitation(r))
 		t.Live = true
 		t.Reviewed = true
 		t.Connected = g.bridgeConnected
@@ -72,10 +81,14 @@ func (g *game) pollSession() {
 		for _, d := range s.Deposits {
 			seat := int(d.Seat)
 			if d.Purpose == "seatbond" {
-				seat = int(v.Mine)
-				if len(s.Seats) == 0 {
+				if len(r.Joins) == 0 {
+					// Before the join is published there is no roster position
+					// yet. Show the local bond in a provisional card without
+					// claiming that the player has joined.
+					seat = 0
+				} else if len(s.Seats) == 0 {
 					for i, j := range r.Joins {
-						if j.BondOutpoint == r.SeatBond.Outpoint {
+						if j.BondOutpoint == d.Outpoint {
 							seat = i
 							break
 						}
@@ -85,11 +98,13 @@ func (g *game) pollSession() {
 			if seat >= len(t.Seats) {
 				continue
 			}
-			p := tablelobby.Payment{Confirmations: uint32(max(0, d.Confirmations)), Required: uint32(max(0, d.RequiredConfirmations)), Checked: d.Check == "verified" || d.Check == "confirming", Phase: tablelobby.Confirming}
-			if d.Check == "verified" {
+			p := tablelobby.Payment{Confirmations: uint32(max(0, d.Confirmations)), Required: uint32(max(0, d.RequiredConfirmations)), Checked: d.Check == "verified" || d.Check == "confirming", Phase: tablelobby.Announced}
+			switch d.Check {
+			case "confirming":
+				p.Phase = tablelobby.Confirming
+			case "verified":
 				p.Phase = tablelobby.Verified
-			}
-			if d.Check == "mismatch" {
+			case "missing", "mismatch":
 				p.Phase = tablelobby.Rejected
 			}
 			if d.Purpose == "stake" {
@@ -97,6 +112,10 @@ func (g *game) pollSession() {
 			}
 			if d.Purpose == "seatbond" {
 				t.Seats[seat].Admission = p
+				if len(r.Joins) == 0 {
+					t.Seats[seat].Ours = true
+					t.Seats[seat].Name = "You · bond pending"
+				}
 			}
 		}
 		t.RefundStatus = "Refunds use your dcrpulse payout address."

@@ -62,3 +62,15 @@ func TestPaymentRequiresAllEvidence(t *testing.T) {
 		}
 	}
 }
+
+func TestBondCardLabelShowsConfirmationProgress(t *testing.T) {
+	p := Payment{Phase: Confirming, Checked: true, Confirmations: 1, Required: 2}
+	if got := p.BondCardLabel(); got != "BOND POSTED · 1/2 CONFIRMATIONS" {
+		t.Fatalf("progress label = %q", got)
+	}
+	p.Phase = Verified
+	p.Confirmations = 2
+	if got := p.BondCardLabel(); got != "BOND VERIFIED · 2/2 CONFIRMATIONS" {
+		t.Fatalf("verified label = %q", got)
+	}
+}

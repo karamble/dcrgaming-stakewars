@@ -53,6 +53,29 @@ func (p Payment) Label() string {
 	}
 }
 
+// BondCardLabel is the compact, per-player admission status shown while the
+// roster is assembling. It describes only locally checked chain evidence.
+func (p Payment) BondCardLabel() string {
+	if p.Complete() {
+		return fmt.Sprintf("BOND VERIFIED · %d/%d CONFIRMATIONS", p.Confirmations, p.Required)
+	}
+	switch p.Phase {
+	case Approval:
+		return "BOND APPROVAL REQUIRED"
+	case Announced:
+		return "BOND POSTED · VERIFYING OUTPUT"
+	case Confirming, Verified:
+		if p.Checked && p.Required > 0 {
+			return fmt.Sprintf("BOND POSTED · %d/%d CONFIRMATIONS", p.Confirmations, p.Required)
+		}
+		return "BOND POSTED · VERIFYING OUTPUT"
+	case Rejected:
+		return "BOND OUTPUT REJECTED"
+	default:
+		return ""
+	}
+}
+
 type Seat struct {
 	Name                                      string
 	Ours, Joined, IdentityVerified, Committed bool

@@ -179,8 +179,9 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 			title = fmt.Sprintf("PLAYER %02d", i+1)
 		}
 		c.Text(title, x+17, y+13, 11, Muted)
+		showPlayer := s.Joined || s.Ours || s.Admission.Phase != tablelobby.Unknown
 		name := "Awaiting player"
-		if s.Joined {
+		if showPlayer {
 			name = shortTableText(s.Name, 23)
 			if name == "" {
 				name = "Unnamed participant"
@@ -190,7 +191,7 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 		if s.Ours {
 			c.Text("YOU", x+float64(r.Dx())-47, y+13, 11, col)
 		}
-		if s.Joined {
+		if showPlayer {
 			stakey(c, x+float64(r.Dx())-42, y+105, 1.45, col, 1, float64(v.Frame)/80, false)
 		} else {
 			c.Circle(x+float64(r.Dx())-40, y+83, 20, color.RGBA{43, 62, 79, 255})
@@ -199,6 +200,9 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 		}
 		status := s.Status()
 		statusCol := tableAmber
+		if (!s.Joined || !s.Admission.Complete()) && s.Admission.BondCardLabel() != "" {
+			status = s.Admission.BondCardLabel()
+		}
 		if !s.Joined {
 			statusCol = Muted
 		}
@@ -310,7 +314,7 @@ func drawTableTerms(c Canvas, t tablelobby.Table) {
 	c.Line(x, 566, 1354, 566, 1, color.RGBA{43, 62, 79, 255})
 	c.Text("Total / player: "+tablelobby.DCR(costs.Total)+" DCR", x, 580, 13, Mint)
 	c.Text("Network fees calculated by dcrpulse", x, 603, 11, Muted)
-	c.Text(fmt.Sprintf("Stake refund: %d blocks · bonds: %d", t.Invite.CSVBlocks, seating.BondLockBlocks), x, 631, 12, White)
+	c.Text(fmt.Sprintf("Stake refund: %d blocks · bonds: %d", t.Invite.CSVBlocks, t.Invite.AdmissionBlocks), x, 631, 12, White)
 	c.Text(fmt.Sprintf("Admission closes at block %d", t.Invite.Until), x, 655, 12, White)
 	c.Text("Winner takes pot · draw returns equal shares", x, 682, 11, Muted)
 	c.Text("Exact payout fee shown before approval", x, 702, 11, Muted)

@@ -3,9 +3,19 @@
 package main
 
 import (
+	"github.com/karamble/dcrgaming-sdk/pkg/membership"
+	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
 	"github.com/karamble/dcrstakewars/internal/bridgeconn"
 	"testing"
 )
+
+func TestLiveInvitationPreservesAcceptedAdmissionTerms(t *testing.T) {
+	r := sdk.TableRecord{Match: "abc123", GCID: "group", Terms: membership.Terms{Seats: 2, BuyInAtoms: 100000, CSVBlocks: 288, Until: 1000, BondAtoms: 10000, BondLockBlocks: 2016}}
+	inv := liveInvitation(r)
+	if inv.AdmissionAtoms != r.Terms.BondAtoms || inv.AdmissionBlocks != r.Terms.BondLockBlocks {
+		t.Fatalf("live view dropped accepted admission terms: %+v", inv)
+	}
+}
 
 func TestBridgeAcceptanceOpensPreparationNotFundedSeats(t *testing.T) {
 	g := &game{arena: true, settingsOpen: true}
