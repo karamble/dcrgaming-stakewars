@@ -1,0 +1,499 @@
+{
+  "Version": 17,
+  "Config": {
+    "Seed": 42,
+    "Width": 4096,
+    "Height": 768,
+    "Seats": 6,
+    "Units": 4,
+    "HP": 100,
+    "TurnTicks": 120,
+    "RetreatTicks": 30,
+    "ResolutionTicks": 3600,
+    "SuddenDeathTurn": 8,
+    "WaterRise": 20,
+    "ReadyTicks": 180,
+    "Environment": true,
+    "WeaponDelays": true
+  },
+  "Ticks": 13751,
+  "Inputs": [
+    {
+      "Tick": 240,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 240,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 660,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 660,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 1080,
+      "Seat": 2,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 1080,
+      "Seat": 2,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 1500,
+      "Seat": 3,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 1500,
+      "Seat": 3,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 1920,
+      "Seat": 4,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 1920,
+      "Seat": 4,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 2340,
+      "Seat": 5,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 2340,
+      "Seat": 5,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 2763,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 2763,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 3206,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 3206,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 3626,
+      "Seat": 2,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 3626,
+      "Seat": 2,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 4066,
+      "Seat": 3,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 4066,
+      "Seat": 3,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 4511,
+      "Seat": 4,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 4511,
+      "Seat": 4,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 4931,
+      "Seat": 5,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 4931,
+      "Seat": 5,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 5351,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 5351,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 5776,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 5776,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 6196,
+      "Seat": 2,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 6196,
+      "Seat": 2,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 6584,
+      "Seat": 3,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 6584,
+      "Seat": 3,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 7006,
+      "Seat": 4,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 7006,
+      "Seat": 4,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 7439,
+      "Seat": 5,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 7439,
+      "Seat": 5,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 7713,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 7713,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 8133,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 8133,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 8553,
+      "Seat": 2,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 8553,
+      "Seat": 2,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 8973,
+      "Seat": 3,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 8973,
+      "Seat": 3,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 9290,
+      "Seat": 4,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 9290,
+      "Seat": 4,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 9593,
+      "Seat": 5,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 9593,
+      "Seat": 5,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 9956,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 9956,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 10373,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 10373,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 10721,
+      "Seat": 2,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 10721,
+      "Seat": 2,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 11141,
+      "Seat": 3,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 11141,
+      "Seat": 3,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 11519,
+      "Seat": 4,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 11519,
+      "Seat": 4,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 11939,
+      "Seat": 5,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 11939,
+      "Seat": 5,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 12213,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 12213,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 12559,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 12559,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 13110,
+      "Seat": 3,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 13110,
+      "Seat": 3,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 13658,
+      "Seat": 5,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 13658,
+      "Seat": 5,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    }
+  ],
+  "FinalHash": "60fb6c806e764db7afce71ed3160818fed0d0c1fdb769f8bcb5fc67c9e9a4e77"
+}

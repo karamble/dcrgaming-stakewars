@@ -1,0 +1,6 @@
+# Generated screenshots and visual previews.
+/artifacts/
+
+# Generated Python bytecode from settlement research.
+__pycache__/
+*.pyc

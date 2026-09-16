@@ -1,0 +1,1 @@
+Remove the entire black/navy background and ALL glow around the mining drill. Keep only the original drill itself unchanged. Output true transparent alpha background, no checkerboard painted into image, no shadow, no glow. This is an isolated game sprite that must composite over arbitrary terrain. Preserve the side view pointing right and the complete object.

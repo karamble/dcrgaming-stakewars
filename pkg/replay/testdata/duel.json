@@ -1,0 +1,457 @@
+{
+  "Version": 17,
+  "Config": {
+    "Seed": 42,
+    "Width": 1536,
+    "Height": 768,
+    "Seats": 2,
+    "Units": 4,
+    "HP": 100,
+    "TurnTicks": 120,
+    "RetreatTicks": 30,
+    "ResolutionTicks": 3600,
+    "SuddenDeathTurn": 8,
+    "WaterRise": 20,
+    "ReadyTicks": 180,
+    "Environment": true,
+    "WeaponDelays": true
+  },
+  "Ticks": 12015,
+  "Inputs": [
+    {
+      "Tick": 240,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 240,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 660,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 660,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 1080,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 1080,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 1500,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 1500,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 1920,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 1920,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 2340,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 2340,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 2789,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 2789,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 3213,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 3213,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 3487,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 3487,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 3907,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 3907,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 4327,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 4327,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 4747,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 4747,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 5167,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 5167,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 5587,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 5587,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 6007,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 6007,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 6313,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 6313,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 6587,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 6587,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 7007,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 7007,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 7403,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 7403,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 7823,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 7823,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 8243,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 8243,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 8539,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 8539,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 8865,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 8865,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 9171,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 9171,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 9445,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 9445,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 9865,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 9865,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 10429,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 10429,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 10703,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 10703,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 11009,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 11009,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 11349,
+      "Seat": 0,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 11349,
+      "Seat": 0,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    },
+    {
+      "Tick": 11769,
+      "Seat": 1,
+      "Sequence": 0,
+      "Kind": 3,
+      "Param": 1
+    },
+    {
+      "Tick": 11769,
+      "Seat": 1,
+      "Sequence": 1,
+      "Kind": 4,
+      "Param": 650
+    }
+  ],
+  "FinalHash": "3f3fbf76171bc6850aa896ef98dd2f57138b80e27cc86c2771472d62b81d3c96"
+}
