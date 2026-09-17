@@ -96,7 +96,7 @@ func (r *rules) Handle(ctx context.Context, in sdk.Message) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-		return fmt.Errorf("game inbox full; resync required")
+		return fmt.Errorf("game inbox full; local consumer is not keeping up")
 	}
 }
 func (r *rules) handleWorld(in sdk.Message) error {

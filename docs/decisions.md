@@ -31,6 +31,9 @@ specification. Technical proposals are not security guarantees.
 
 - Peer traffic is asynchronous Bison Relay messages through the SDK and the
   dcrpulse gaming bridge. No live input streaming or optional live-chunk mode.
+- The proposed breaking one-shot event contract, durable delivery rules and
+  complete table lifecycle are specified in
+  [BR gaming wire v2](br-gaming-wire-v2.md). It is not implemented yet.
 - The local gRPC event subscription is only a bridge transport detail.
 - The active player has a visible countdown. Retain the PRD's 45-second turn
   and 3-second retreat as initial defaults.

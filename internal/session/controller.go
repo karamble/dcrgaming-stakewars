@@ -19,7 +19,6 @@ import (
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/schnorr"
 	"github.com/decred/slog"
-	"github.com/karamble/dcrgaming-sdk/pkg/gaming/schema"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/transport"
 	gw "github.com/karamble/dcrgaming-sdk/pkg/gaming/wire"
 	"github.com/karamble/dcrgaming-sdk/pkg/identity"
@@ -562,7 +561,7 @@ func (c *Controller) prepareWorld(ctx context.Context, rec sdk.TableRecord) erro
 	if problem != "" {
 		return errors.New(problem)
 	}
-	if e = c.runtime.Send(ctx, rec.Match, "w.world", own, gw.ClassState); e != nil {
+	if e = c.runtime.Send(ctx, rec.Match, "w.world", own, gw.ClassDurable); e != nil {
 		return e
 	}
 	if !all {
@@ -629,7 +628,7 @@ func (c *Controller) submit(ctx context.Context, cmd turnCommand) error {
 		return e
 	}
 	c.publishHead(cmd.Match, m)
-	return c.runtime.Send(ctx, cmd.Match, "w.turn", b, gw.ClassTurn)
+	return c.runtime.Send(ctx, cmd.Match, "w.turn", b, gw.ClassDurable)
 }
 func (c *Controller) receive(ctx context.Context, in sdk.Message) error {
 	c.rules.mu.Lock()
@@ -661,29 +660,6 @@ func (c *Controller) receive(ctx context.Context, in sdk.Message) error {
 			c.publishHead(in.Match, m)
 		}
 		return err
-	case "w.sync":
-		var q struct{ Turn uint32 }
-		if e := json.Unmarshal(in.Body, &q); e != nil {
-			return e
-		}
-		head := m.journal.Head()
-		limit := head.Turn
-		if head.Phase == sim.Ended {
-			limit++
-		}
-		for turn := q.Turn; turn < limit && turn-q.Turn < 6; turn++ {
-			raw, e := m.journal.AcceptedTurn(turn)
-			if e != nil {
-				return e
-			}
-			b, e := turnbatch.Decode(bytes.NewReader(raw))
-			if e != nil {
-				return e
-			}
-			if e = c.runtime.Send(ctx, in.Match, schema.Kind("w.turn"), b, gw.ClassState); e != nil {
-				return e
-			}
-		}
 	}
 	return nil
 }

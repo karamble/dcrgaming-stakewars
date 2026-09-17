@@ -129,7 +129,6 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 	if err != nil || len(records) != 1 || records[0].Terms != terms {
 		t.Fatalf("pending admission missing: %+v %v", records, err)
 	}
-	runtime.Resync(ctx)
 	if err = runtime.Fund(ctx, "abcdef01"); !errors.Is(err, rt.ErrNotSeated) {
 		t.Fatalf("pending funding: %v", err)
 	}
@@ -154,7 +153,6 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 	if restarted.Terms("abcdef01") != terms {
 		t.Fatal("restored terms changed")
 	}
-	restarted.Resync(ctx)
 	if lostID {
 		for id := range fake.Spends() {
 			if err = restarted.ReconcileSpend(ctx, "abcdef01", "seatbond", id); err != nil {

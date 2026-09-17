@@ -1,7 +1,40 @@
 # Bridge financial authority implementation
 
-Status: **in progress**, updated 2026-09-16. The full system is not finished.
-No live wallet, deposit, or deployment was changed during this implementation work.
+Status: **in progress**, updated 2026-09-17. The full system is not finished.
+No live wallet or deposit was changed during the 2026-09-17 wire implementation.
+
+## 2026-09-17 one-shot BR wire implementation
+
+The tested changes are now installed in the actual `dcrgaming-sdk`, dcrpulse
+`gaming-standalone`, and dcrstakewars working trees. They are not committed or
+deployed yet.
+
+- Gaming envelope framing is version 2 with a stable full BLAKE-256 message ID.
+- Deployed brclientd `gc-message` notifications now enter the gaming bridge;
+  protocol frames are withheld from browser chat.
+- dcrpulse persists inbound gameplay frames before delivery, deduplicates exact
+  BR-history repeats, replays after the SDK cursor, rebuilds from local BR group
+  history after a notification gap, and closes a stalled stream for replay
+  instead of dropping a frame.
+- Bridge-reserved financial frames use the same durable inbox but are replayed
+  only to the financial worker and never exposed to the untrusted game. The old
+  authority `want` request/reply flag was removed; participant and roster state
+  publish only on their own transitions.
+- dcrpulse durably claims each outgoing `(game, gcid, mid, part)` before its
+  only BR send attempt. SDK retries and bridge restarts cannot republish it.
+- SDK peer resync/request/reply messages and StakeWars `w.sync` were deleted.
+- Generic formation kinds now use the reserved `table.*` and `finance.*`
+  namespaces. A game cannot publish those through `Runtime.Send`.
+- Generic table/finance events and StakeWars world/turn transitions use
+  `exp=0`; protocol reducers decide whether replayed state still applies.
+- A repeated two-seat test proves exactly two seat, two roster-prepare and two
+  roster-commit messages. Funding adds exactly two stake and two payout
+  destination records. Seat draw and idle chain ticks add zero messages.
+
+Verified after installation: full dcrgaming-sdk tests, dcrpulse
+`internal/gamingbridge` and `internal/services`, and all StakeWars packages.
+This does not complete the real two-wallet acceptance gate or authorize a
+real-money test.
 
 ## Required trust boundary
 

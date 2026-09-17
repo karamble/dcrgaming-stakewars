@@ -70,7 +70,6 @@ type Update struct {
 	InviteSerial    uint64
 	ChainKnown      bool
 	Height          uint32
-	Gap             bool
 }
 
 // RunLobby receives local bridge events. Peer gameplay remains asynchronous and
@@ -86,17 +85,11 @@ func runLobby(ctx context.Context, cfg Config, emit func(Update), heartbeat, ret
 	}
 	for ctx.Err() == nil {
 		emit(Update{Status: "Connecting securely…", Busy: true})
-		gaps := make(chan struct{}, 1)
 		dialCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
-		b, err := connect(dialCtx, cfg, func([]string) {
-			select {
-			case gaps <- struct{}{}:
-			default:
-			}
-		})
+		b, err := connect(dialCtx, cfg)
 		cancel()
 		if err == nil {
-			serveLobby(ctx, b, gaps, emit, heartbeat)
+			serveLobby(ctx, b, emit, heartbeat)
 			b.Close()
 			return
 		}
@@ -117,7 +110,7 @@ func runLobby(ctx context.Context, cfg Config, emit func(Update), heartbeat, ret
 	}
 }
 
-func serveLobby(ctx context.Context, b *transport.Bridge, gaps <-chan struct{}, emit func(Update), heartbeat time.Duration) {
+func serveLobby(ctx context.Context, b *transport.Bridge, emit func(Update), heartbeat time.Duration) {
 	frames, err := b.Events(ctx)
 	if err != nil {
 		emit(Update{Status: "Could not subscribe to bridge events."})
@@ -163,10 +156,6 @@ func serveLobby(ctx context.Context, b *transport.Bridge, gaps <-chan struct{}, 
 			return
 		case <-ticker.C:
 			report()
-		case <-gaps:
-			snapshot.Gap = true
-			snapshot.Notice = "Bridge delivery gap: invitation history may be incomplete. Reopen the invite in dcrpulse."
-			publish()
 		case _, ok := <-frames:
 			if !ok {
 				return

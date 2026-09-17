@@ -21,15 +21,15 @@ const GameID = "stakewars"
 // Connect proves the credentials against the current SDK mTLS Hello contract.
 // No invitations, table capabilities, payments or peer messages are sent.
 func Connect(ctx context.Context, c Config) (*transport.Bridge, error) {
-	return connect(ctx, c, nil)
+	return connect(ctx, c)
 }
 
-func connect(ctx context.Context, c Config, onGap func([]string)) (*transport.Bridge, error) {
+func connect(ctx context.Context, c Config) (*transport.Bridge, error) {
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
 	addr, _ := c.Address()
-	b, err := transport.Dial(ctx, transport.BridgeConfig{Log: log, Addr: addr, ClientCert: []byte(c.ClientCert), ClientKey: []byte(c.ClientKey), BridgeCert: []byte(c.BridgeCert), GameID: GameID, GameVer: 1, ClientVersion: "stakewars-dev", OnGap: onGap})
+	b, err := transport.Dial(ctx, transport.BridgeConfig{Log: log, Addr: addr, ClientCert: []byte(c.ClientCert), ClientKey: []byte(c.ClientKey), BridgeCert: []byte(c.BridgeCert), GameID: GameID, GameVer: 1, ClientVersion: "stakewars-dev"})
 	if err != nil {
 		return nil, errors.New("Could not initialize the secure bridge connection.")
 	}
