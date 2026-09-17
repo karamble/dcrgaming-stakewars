@@ -1,8 +1,9 @@
 package tablelobby
 
 import (
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
 	"testing"
+
+	"github.com/karamble/dcrstakewars/internal/bridgeconn"
 )
 
 func TestUnknownAndStaleEvidenceNeverReady(t *testing.T) {
@@ -72,5 +73,29 @@ func TestBondCardLabelShowsConfirmationProgress(t *testing.T) {
 	p.Confirmations = 2
 	if got := p.BondCardLabel(); got != "BOND VERIFIED · 2/2 CONFIRMATIONS" {
 		t.Fatalf("verified label = %q", got)
+	}
+}
+
+func TestLiveGuidanceSeparatesSeatingFromFunding(t *testing.T) {
+	table := Demo(2, 5)
+	table.Live = true
+	table.WorldVerified = false
+	table.Status = "Waiting for seating block: 1 more confirmation"
+	for i := range table.Seats {
+		table.Seats[i].Stake = Payment{}
+	}
+
+	title, body := table.Guidance()
+	if title != table.Status {
+		t.Fatalf("title = %q, want live seating status %q", title, table.Status)
+	}
+	if body != "Players independently verify the same seating block, map and starting positions. No payment approval is needed." {
+		t.Fatalf("unexpected map-check guidance: %q", body)
+	}
+
+	table.WorldVerified = true
+	title, _ = table.Guidance()
+	if title != "Waiting for match stakes" {
+		t.Fatalf("title = %q after map agreement", title)
 	}
 }

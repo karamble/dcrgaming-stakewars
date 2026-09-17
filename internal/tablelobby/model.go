@@ -199,7 +199,25 @@ func (t Table) Guidance() (string, string) {
 		if t.Error != "" {
 			return t.Status, t.Error
 		}
-		return t.Status, "All players sign the payout. If cooperation fails, recover your own deposits after their locks."
+		switch t.Stage() {
+		case 1:
+			return "Waiting for admission bonds", "Dcrpulse verifies the bonds and their confirmations. No further payment approval is needed."
+		case 2:
+			return "Waiting for roster agreement", "Every participant publishes one signed roster commitment. No payment approval is needed."
+		case 3:
+			return "Waiting for the seating block", "The next agreed block determines the seat draw. No payment approval is needed."
+		case 4:
+			if t.Status != "" {
+				return t.Status, "Players independently verify the same seating block, map and starting positions. No payment approval is needed."
+			}
+			return "Verifying seating block and battlefield", "Players independently verify the same seating block, map and starting positions. No payment approval is needed."
+		case 5:
+			return "Waiting for match stakes", "Approve your stake once in dcrpulse. A pending or confirmed payment must not be submitted again."
+		case 6:
+			return "Waiting for payout destinations", "Dcrpulse supplies and verifies every bridge-owned payout destination."
+		default:
+			return t.Status, "All players sign the payout. If cooperation fails, recover your own deposits after their locks."
+		}
 	}
 	if t.Stale {
 		return "Refresh the table evidence", "Delivery was interrupted. Earlier checks cannot establish current readiness."

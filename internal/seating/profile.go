@@ -9,7 +9,7 @@ import (
 	"github.com/karamble/dcrstakewars/internal/payout"
 )
 
-const ProtocolVersion = 4
+const ProtocolVersion = 5
 const MinRefundBlocks uint32 = 288
 const BondLockBlocks uint32 = 2016
 const AccuseFeeAtoms uint64 = 10000

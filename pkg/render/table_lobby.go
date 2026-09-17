@@ -133,7 +133,7 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 	stage := t.Stage()
 	labels := []string{"INVITATION", "ENTRY BOND", "ROSTER", "SEAT DRAW", "STAKE", "TABLE BOND", "MAP CHECK", "READY"}
 	if t.Live {
-		labels = []string{"INVITATION", "ENTRY BOND", "ROSTER", "SEAT DRAW", "MAP CHECK", "STAKE", "PAYOUTS", "READY"}
+		labels = []string{"INVITATION", "ENTRY BOND", "ROSTER", "SEATING BLOCK", "MAP CHECK", "STAKE", "PAYOUTS", "READY"}
 	}
 	for i, label := range labels {
 		x := 48 + float64(i)*168

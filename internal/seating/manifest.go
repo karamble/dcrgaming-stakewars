@@ -13,9 +13,11 @@ import (
 	"lukechampine.com/blake3"
 )
 
-// AnchorConfirmations is part of the signed preset. A changed anchor never
-// replaces a previously signed world; it requires a new table.
-const AnchorConfirmations uint32 = 6
+// AnchorConfirmations is part of the signed preset. The seating beacon is
+// already an agreed future block, so it can seed the seat draw and battlefield
+// as soon as that block exists. A changed anchor never replaces a previously
+// signed world; it requires a new table.
+const AnchorConfirmations uint32 = 1
 const ContentVersion = "stakewars-builtins-v17"
 
 type Manifest struct {
