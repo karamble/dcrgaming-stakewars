@@ -10,8 +10,15 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+func acquireInstanceLock(dir string) (func() error, bool, error) {
+	return acquireLockFiles([]string{filepath.Join(dir, ".instance.lock")})
+}
+
 func acquireProfileProbe(dir string) (func() error, bool, error) {
-	paths := []string{filepath.Join(dir, "spends.json.lock"), filepath.Join(dir, "tables", ".runtime.lock")}
+	return acquireLockFiles([]string{filepath.Join(dir, "spends.json.lock"), filepath.Join(dir, "tables", ".runtime.lock")})
+}
+
+func acquireLockFiles(paths []string) (func() error, bool, error) {
 	files := make([]*os.File, 0, len(paths))
 	release := func() error {
 		var first error

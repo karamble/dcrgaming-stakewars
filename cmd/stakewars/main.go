@@ -613,8 +613,13 @@ func runDesktop(cfg *appconfig.Config) error {
 	if (*arena || *demoNetwork) && !devEnabled {
 		return fmt.Errorf("interactive fixtures require -tags desktop,dev")
 	}
+	releaseProfile, err := session.AcquireProfileInstance(*dataDir)
+	if err != nil {
+		return err
+	}
+	defer releaseProfile()
 	g := &game{dataDir: *dataDir, screenshotAfter: *shotAfter, speaker: speaker{muted: *mute}, seed: *seed, arena: *arena, screenshot: *shot}
-	if err := g.loadControls(*controls); err != nil {
+	if err = g.loadControls(*controls); err != nil {
 		return err
 	}
 	g.startup = !*skipCover && (*showCover || (*settings == "" && !*tableDemo && *shot == ""))

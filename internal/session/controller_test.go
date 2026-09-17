@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -76,6 +77,27 @@ func TestWaitForProfileContinuesWhenPreviousOwnerStops(t *testing.T) {
 		}
 	case <-ctx.Done():
 		t.Fatal("wait did not continue after release")
+	}
+}
+
+func TestOnlyOneDesktopInstanceUsesAProfile(t *testing.T) {
+	dir := t.TempDir()
+	release, err := AcquireProfileInstance(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = AcquireProfileInstance(dir); !errors.Is(err, ErrProfileInUse) {
+		t.Fatalf("second instance error = %v", err)
+	}
+	if err = release(); err != nil {
+		t.Fatal(err)
+	}
+	next, err := AcquireProfileInstance(dir)
+	if err != nil {
+		t.Fatalf("profile remained owned after exit: %v", err)
+	}
+	if err = next(); err != nil {
+		t.Fatal(err)
 	}
 }
 

@@ -10,8 +10,15 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+func acquireInstanceLock(dir string) (func() error, bool, error) {
+	return acquireLockFiles([]string{filepath.Join(dir, ".instance.lock")})
+}
+
 func acquireProfileProbe(dir string) (func() error, bool, error) {
-	paths := []string{filepath.Join(dir, "spends.json.lock"), filepath.Join(dir, "tables", ".runtime.lock")}
+	return acquireLockFiles([]string{filepath.Join(dir, "spends.json.lock"), filepath.Join(dir, "tables", ".runtime.lock")})
+}
+
+func acquireLockFiles(paths []string) (func() error, bool, error) {
 	type lockedFile struct {
 		file    *os.File
 		overlap *windows.Overlapped

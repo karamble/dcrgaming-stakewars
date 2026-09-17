@@ -2,8 +2,25 @@ package session
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+var ErrProfileInUse = errors.New("this player profile is already open in another StakeWars window")
+
+// AcquireProfileInstance prevents two desktop processes from presenting the
+// same player profile. The lease is released by the kernel even after a crash;
+// the empty lock file may safely remain on disk.
+func AcquireProfileInstance(dir string) (func() error, error) {
+	release, busy, err := acquireInstanceLock(dir)
+	if err != nil {
+		return nil, err
+	}
+	if busy {
+		return nil, ErrProfileInUse
+	}
+	return release, nil
+}
 
 // WaitForProfile waits until no other StakeWars runtime owns this player's
 // durable table and spend stores. It performs no bridge calls while waiting,
