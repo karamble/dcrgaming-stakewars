@@ -30,6 +30,7 @@ var TopToggleRect = image.Rect(1398, 8, 1432, 40)
 var BottomToggleRect = image.Rect(1398, 860, 1432, 892)
 
 var LobbyResumeRect = image.Rect(65, 675, 456, 731)
+var LobbyQuitRect = image.Rect(800, 675, 950, 731)
 
 var ResumeRect = image.Rect(520, 464, 920, 518)
 var LeaveRect = image.Rect(520, 532, 920, 586)

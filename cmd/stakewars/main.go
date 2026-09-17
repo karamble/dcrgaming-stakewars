@@ -87,6 +87,7 @@ type game struct {
 	message             string
 	screenshot          string
 	shotDone            bool
+	quitRequested       bool
 }
 
 func (g *game) reset() error {
@@ -136,11 +137,15 @@ func (g *game) Update() error {
 			}
 		}
 	}()
-	if g.shotDone {
+	ctrl := ebiten.IsKeyPressed(ebiten.KeyControlLeft) || ebiten.IsKeyPressed(ebiten.KeyControlRight) || ebiten.IsKeyPressed(ebiten.KeyMetaLeft) || ebiten.IsKeyPressed(ebiten.KeyMetaRight)
+	if g.shotDone || g.quitRequested || ebiten.IsWindowBeingClosed() || (ctrl && inpututil.IsKeyJustPressed(ebiten.KeyQ)) {
 		return ebiten.Termination
 	}
 	g.frame++
 	if g.startup {
+		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+			return ebiten.Termination
+		}
 		if g.startupDrawn && !g.startupReady {
 			if err := g.reset(); err != nil {
 				return err
@@ -179,6 +184,9 @@ func (g *game) Update() error {
 	}
 	if !g.arena {
 		x, y := ebiten.CursorPosition()
+		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) || (inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && image.Pt(x, y).In(render.LobbyQuitRect)) {
+			return ebiten.Termination
+		}
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) && image.Pt(x, y).In(render.LobbyTablesRect) {
 			g.tableOpen = true
 			return nil
@@ -532,7 +540,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 		render.DrawCover(g.gpu, g.frame, g.startupReady)
 		g.startupDrawn = true
 	} else {
-		g.scene.Draw(g.gpu, g.s, render.View{ImpactReview: g.camera.ReviewingImpact(), Network: g.networkMatch != "", Settlement: g.sessionView.Status, TableLobby: g.tableLobbyView(), Settings: g.settingsView(), BridgeStatus: g.bridgeStatus, BridgeLobby: g.bridgeLobbyView(), WeaponPage: g.weaponPage, WeaponMenu: g.weaponMenu, MenuOrigin: g.menuOrigin, KeyLabels: g.controlLabels(), ControlsOpen: g.controlsOpen, ControlRows: g.controlRows(), BindingIndex: g.bindingIndex, ControlsMessage: g.controlsMessage, Muted: g.speaker.muted, HideTop: g.hideTop, HideBottom: g.hideBottom, Camera: &g.camera, Arena: g.arena, Dev: devEnabled && g.networkMatch == "", MouseX: mx, MouseY: my, Paused: g.paused, Frame: g.frame, Power: g.power, Precision: g.pressed("precision"), Error: g.message})
+		g.scene.Draw(g.gpu, g.s, render.View{ImpactReview: g.camera.ReviewingImpact(), Network: g.networkMatch != "", Settlement: g.sessionView.Status, TableLobby: g.tableLobbyView(), Settings: g.settingsView(), BridgeStatus: g.bridgeStatus, BridgeConnected: g.bridgeConnected, BridgeBusy: g.bridgeBusy, BridgeLobby: g.bridgeLobbyView(), WeaponPage: g.weaponPage, WeaponMenu: g.weaponMenu, MenuOrigin: g.menuOrigin, KeyLabels: g.controlLabels(), ControlsOpen: g.controlsOpen, ControlRows: g.controlRows(), BindingIndex: g.bindingIndex, ControlsMessage: g.controlsMessage, Muted: g.speaker.muted, HideTop: g.hideTop, HideBottom: g.hideBottom, Camera: &g.camera, Arena: g.arena, Dev: devEnabled && g.networkMatch == "", MouseX: mx, MouseY: my, Paused: g.paused, Frame: g.frame, Power: g.power, Precision: g.pressed("precision"), Error: g.message})
 	}
 	if g.screenshot != "" && g.frame >= g.screenshotAfter && !g.shotDone && (!g.startup || g.startupReady) {
 		img := image.NewRGBA(image.Rect(0, 0, render.Width, render.Height))
@@ -601,7 +609,7 @@ func runDesktop(cfg *appconfig.Config) error {
 	showCover, skipCover, tableDemo := &cfg.Cover, &cfg.SkipCover, &cfg.TableDemo
 	settings, arena, shotAfter, shot := &cfg.Settings, &cfg.Arena, &cfg.ScreenshotAfter, &cfg.Screenshot
 	mute, seed, dataDir := &cfg.Mute, &cfg.Seed, &cfg.AppData
-	bridgePath, autoConnect, demoNetwork, controls := &cfg.BridgeConfig, &cfg.Connect, &cfg.DemoNetwork, &cfg.Controls
+	bridgePath, demoNetwork, controls := &cfg.BridgeConfig, &cfg.DemoNetwork, &cfg.Controls
 	if (*arena || *demoNetwork) && !devEnabled {
 		return fmt.Errorf("interactive fixtures require -tags desktop,dev")
 	}
@@ -616,8 +624,12 @@ func runDesktop(cfg *appconfig.Config) error {
 		return err
 	}
 	g.initSettings(*bridgePath)
-	if *autoConnect {
+	// Saved, valid credentials are enough intent to connect. Requiring a trip
+	// through Settings hid both a healthy bridge and startup failures.
+	if err := g.bridgeConfig.Validate(); err == nil {
 		g.connectBridge()
+	} else {
+		g.bridgeStatus = "Bridge offline · open Settings to configure the connection"
 	}
 	if *settings != "" {
 		if *settings != "controls" && *settings != "bridge" {
@@ -656,5 +668,6 @@ func runDesktop(cfg *appconfig.Config) error {
 	}
 	ebiten.SetWindowTitle(title)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	ebiten.SetWindowClosingHandled(true)
 	return ebiten.RunGame(g)
 }

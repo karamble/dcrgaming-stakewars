@@ -32,6 +32,16 @@ func waitSession(t *testing.T, label string, cs []*Controller, f func() bool) {
 	}
 }
 
+func TestStateLockErrorNamesTheProfileOwnerProblem(t *testing.T) {
+	err := friendlyOpenError(fmt.Errorf("state already in use (/secret/profile/spends.json.lock): resource temporarily unavailable"))
+	if got := err.Error(); got != "This player profile is already open in another StakeWars window. Quit that window before reconnecting." {
+		t.Fatalf("unexpected lock guidance: %q", got)
+	}
+	if strings.Contains(err.Error(), "/secret/") || strings.Contains(err.Error(), ".lock") {
+		t.Fatal("raw lock path leaked into the player-facing error")
+	}
+}
+
 // Full production controllers over local mTLS: admission, deterministic world,
 // wallet-approved stake, signed/replayed turns, and all-seat settlement. No funds.
 func TestCooperativeMatch(t *testing.T) {

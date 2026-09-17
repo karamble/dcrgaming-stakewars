@@ -43,6 +43,7 @@ func (g *game) pollSession() {
 		fresh := g.tableState == nil || g.tableState.Invite.SID != v.Match
 		t := tablelobby.New(liveInvitation(r))
 		t.Live = true
+		t.Closed = r.RecoveryOnly || r.Aborted
 		t.Reviewed = true
 		t.Connected = g.bridgeConnected
 		t.Height = v.Height

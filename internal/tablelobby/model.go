@@ -117,6 +117,7 @@ type Table struct {
 	Stale                      bool
 	Demo                       bool
 	Live                       bool
+	Closed                     bool
 	Status, Error              string
 	RefundStatus               string
 	CanFund, Ready             bool

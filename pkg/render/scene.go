@@ -164,6 +164,8 @@ type View struct {
 	Precision           bool
 	Settings            SettingsView
 	BridgeStatus        string
+	BridgeConnected     bool
+	BridgeBusy          bool
 	BridgeLobby         BridgeLobbyView
 	Muted               bool
 	WeaponPage          int
@@ -272,7 +274,14 @@ func lobby(c Canvas, v View) {
 	c.Text("DEVELOPMENT BUILD", 1120, 43, 12, Muted)
 	settingsCog(c)
 	if v.BridgeStatus != "" {
-		c.Text(v.BridgeStatus, 65, 773, 13, Muted)
+		statusColor := color.RGBA{240, 104, 120, 255}
+		if v.BridgeBusy {
+			statusColor = color.RGBA{255, 195, 104, 255}
+		} else if v.BridgeConnected {
+			statusColor = Mint
+		}
+		c.Circle(71, 781, 5, statusColor)
+		c.Text(shortTableText(v.BridgeStatus, 92), 86, 773, 13, statusColor)
 	}
 	c.Line(40, 106, 1400, 106, 1, color.RGBA{53, 80, 99, 180})
 	c.Text("THE NEXT TURN IS YOURS.", 65, 171, 13, Mint)
@@ -294,6 +303,7 @@ func lobby(c Canvas, v View) {
 		c.Text("ENTER to resume", 87, 710, 11, Muted)
 	}
 	tableButton(c, LobbyTablesRect, "TABLE LOBBY  >", true, v)
+	tableButton(c, LobbyQuitRect, "QUIT  /  ESC", false, v)
 	// Hero Stakey, drawn from reusable geometry rather than a screenshot of
 	// the comic. The renderer controls all expressions and equipment.
 	c.Circle(1058, 590, 203, color.RGBA{30, 102, 111, 18})

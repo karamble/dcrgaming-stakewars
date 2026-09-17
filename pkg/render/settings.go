@@ -8,6 +8,7 @@ import (
 
 var LobbySettingsRect = image.Rect(1338, 28, 1394, 84)
 var SettingsCloseRect = image.Rect(1138, 108, 1186, 148)
+var SettingsQuitRect = image.Rect(1010, 108, 1126, 148)
 var SettingsControlsTab = image.Rect(250, 166, 690, 206)
 var SettingsBridgeTab = image.Rect(706, 166, 1166, 206)
 
@@ -56,6 +57,8 @@ func drawSettings(c Canvas, v View) {
 	c.Rect(0, 0, Width, Height, color.RGBA{4, 10, 23, 225})
 	c.Rect(225, 96, 990, 716, Panel)
 	c.Text("SETTINGS", 250, 115, 28, Mint)
+	c.Rect(float64(SettingsQuitRect.Min.X), float64(SettingsQuitRect.Min.Y), float64(SettingsQuitRect.Dx()), float64(SettingsQuitRect.Dy()), Navy)
+	c.Text("QUIT", 1042, 119, 14, Mint)
 	c.Text("X", 1152, 116, 23, White)
 	for i, b := range []image.Rectangle{SettingsControlsTab, SettingsBridgeTab} {
 		col := Navy

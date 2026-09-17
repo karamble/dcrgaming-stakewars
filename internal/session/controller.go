@@ -96,9 +96,16 @@ func Open(ctx context.Context, cfg bridgeconn.Config, dir string) (*Controller, 
 	c, e := New(bridge, dir)
 	if e != nil {
 		bridge.Close()
-		return nil, e
+		return nil, friendlyOpenError(e)
 	}
 	return c, nil
+}
+
+func friendlyOpenError(err error) error {
+	if err != nil && strings.Contains(err.Error(), "state already in use") {
+		return errors.New("This player profile is already open in another StakeWars window. Quit that window before reconnecting.")
+	}
+	return err
 }
 
 // New also supports local mTLS bridge fixtures; all durable state lives under dir.

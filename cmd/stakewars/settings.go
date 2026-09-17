@@ -262,6 +262,10 @@ func (g *game) updateSettings() {
 	x, y := ebiten.CursorPosition()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		p := image.Pt(x, y)
+		if p.In(render.SettingsQuitRect) {
+			g.quitRequested = true
+			return
+		}
 		if p.In(render.SettingsCloseRect) {
 			g.settingsOpen = false
 			g.bindingIndex = -1

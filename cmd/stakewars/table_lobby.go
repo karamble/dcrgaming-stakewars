@@ -53,10 +53,10 @@ func (g *game) updateTableLobby() {
 		if inpututil.IsKeyJustPressed(ebiten.KeyF) && g.sessionView.CanFund {
 			_ = g.session.Action("fund")
 		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyR) {
+		if g.tableState.Closed && inpututil.IsKeyJustPressed(ebiten.KeyR) {
 			_ = g.session.Action("refund")
 		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyB) {
+		if g.tableState.Closed && inpututil.IsKeyJustPressed(ebiten.KeyB) {
 			_ = g.session.Action("bond")
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyTab) && len(g.sessionView.Tables) > 1 {
@@ -81,11 +81,11 @@ func (g *game) updateTableLobby() {
 			}
 			return
 		}
-		if click && p.In(render.TableRefundRect) {
+		if g.tableState.Closed && click && p.In(render.TableRefundRect) {
 			_ = g.session.Action("refund")
 			return
 		}
-		if click && p.In(render.TableBondRefundRect) {
+		if g.tableState.Closed && click && p.In(render.TableBondRefundRect) {
 			_ = g.session.Action("bond")
 			return
 		}

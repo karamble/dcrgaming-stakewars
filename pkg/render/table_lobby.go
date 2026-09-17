@@ -254,10 +254,12 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 			label = "ENTER · JOIN THE BATTLE"
 		}
 		tableButton(c, TableReviewRect, label, t.CanFund || t.Ready, v)
-		tableButton(c, TableRefundRect, "R · REFUND STAKE", false, v)
-		tableButton(c, TableBondRefundRect, "B · REFUND ENTRY", false, v)
+		if t.Closed {
+			tableButton(c, TableRefundRect, "R · REFUND STAKE", false, v)
+			tableButton(c, TableBondRefundRect, "B · REFUND ENTRY", false, v)
+			c.Text(shortTableText(t.RefundStatus, 155), 48, 884, 11, Muted)
+		}
 		c.Text("TAB · NEXT TABLE", 540, 852, 11, Muted)
-		c.Text(shortTableText(t.RefundStatus, 155), 48, 884, 11, Muted)
 	} else if !t.Reviewed && !t.Demo {
 		tableButton(c, TableReviewRect, "MARK TERMS REVIEWED", true, v)
 	} else {
