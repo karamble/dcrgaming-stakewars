@@ -81,7 +81,7 @@ func (g *game) connectBridge() {
 	ctx, cancel := context.WithCancel(context.Background())
 	g.bridgeCancel = cancel
 	g.bridgeBusy = true
-	g.bridgeStatus = "Connecting securely…"
+	g.bridgeStatus = "Checking saved bridge connection…"
 	updates := g.bridgeUpdates
 	dir := filepath.Join(g.dataDir, "session")
 	done := make(chan struct{})
@@ -91,6 +91,24 @@ func (g *game) connectBridge() {
 		if previous != nil {
 			select {
 			case <-previous:
+			case <-ctx.Done():
+				return
+			}
+		}
+		waited, err := session.WaitForProfile(ctx, dir)
+		if err != nil {
+			if ctx.Err() != nil {
+				return
+			}
+			select {
+			case updates <- connectionUpdate{generation: generation, status: "Could not open this player profile: " + err.Error()}:
+			case <-ctx.Done():
+			}
+			return
+		}
+		if waited {
+			select {
+			case updates <- connectionUpdate{generation: generation, status: "Previous window closed · connecting securely", busy: true}:
 			case <-ctx.Done():
 				return
 			}

@@ -42,6 +42,43 @@ func TestStateLockErrorNamesTheProfileOwnerProblem(t *testing.T) {
 	}
 }
 
+func TestWaitForProfileContinuesWhenPreviousOwnerStops(t *testing.T) {
+	dir := t.TempDir()
+	release, busy, err := acquireProfileProbe(dir)
+	if err != nil || busy {
+		t.Fatalf("acquire profile: busy=%v err=%v", busy, err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	done := make(chan struct {
+		waited bool
+		err    error
+	}, 1)
+	go func() {
+		waited, err := WaitForProfile(ctx, dir)
+		done <- struct {
+			waited bool
+			err    error
+		}{waited, err}
+	}()
+	select {
+	case got := <-done:
+		t.Fatalf("wait returned while profile was owned: %+v", got)
+	case <-time.After(400 * time.Millisecond):
+	}
+	if err := release(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case got := <-done:
+		if got.err != nil || !got.waited {
+			t.Fatalf("wait result: %+v", got)
+		}
+	case <-ctx.Done():
+		t.Fatal("wait did not continue after release")
+	}
+}
+
 // Full production controllers over local mTLS: admission, deterministic world,
 // wallet-approved stake, signed/replayed turns, and all-seat settlement. No funds.
 func TestCooperativeMatch(t *testing.T) {
