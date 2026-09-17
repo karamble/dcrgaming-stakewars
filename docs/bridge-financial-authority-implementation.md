@@ -5,9 +5,10 @@ No live wallet or deposit was changed during the 2026-09-17 wire implementation.
 
 ## 2026-09-17 one-shot BR wire implementation
 
-The tested changes are now installed in the actual `dcrgaming-sdk`, dcrpulse
-`gaming-standalone`, and dcrstakewars working trees. They are not committed or
-deployed yet.
+The tested changes are installed and committed in `dcrgaming-sdk`, dcrpulse
+`gaming-standalone`, and dcrstakewars. The dcrpulse dashboard has been rebuilt
+locally and on JACKIN; deployment health is verified separately from protocol
+test coverage.
 
 - Gaming envelope framing is version 2 with a stable full BLAKE-256 message ID.
 - Deployed brclientd `gc-message` notifications now enter the gaming bridge;
