@@ -1,9 +1,8 @@
 # BR gaming wire v2
 
-Status: wire v2 transport and one-shot table formation are implemented in the
-three working repositories as of 2026-09-17. Financial authority integration is
-still in progress. This is a breaking replacement; no compatibility or migration
-layer exists.
+Wire v2 transport and one-shot table formation are implemented across the game,
+the SDK and dcrpulse. This is a breaking replacement; no compatibility or
+migration layer exists.
 
 Implemented and tested now:
 
@@ -212,22 +211,20 @@ deterministic seat draw, stakes and payouts. These are game-agnostic services.
 The invitation terms supply amounts, player count, confirmation policy and
 financial templates; the SDK does not hardcode one game's values.
 
-The game-facing SDK surface is limited to:
+A game does not use the bridge transport directly. It implements
+`runtime.Rules` — `Identity`, `Terms`, `Handle`, `State` — plus the optional
+`Seated` and `CoSigning` hooks, and calls `Fund`, `Settle`, `Send`, `Chain`,
+`BlockHash`, `Seat`, `Seats`, `LogSeats`, `LogKey`, `MatchID`, `Snapshot` and
+`RefreshDeposits` on the runtime.
+
+The transport underneath it, which the runtime owns, speaks:
 
 ```text
-Connect(config) -> Client
-Hello(gameProtocolVersion, capabilities) -> BridgeIdentity
-GetLocalIdentity() -> IdentityView
-Subscribe(cursor) -> BridgeEvent stream
-RespondTableRequest(requestID, response)
-AcknowledgeDelivery(cursor)
-GetTable(tableID) -> TableView
-GetParticipants(tableID) -> []ParticipantView
-RequestFinancialOperation(tableID, obligationID)
-ProposePayout(tableID, exactOutputs, evidenceHash)
-GetFinancialState(tableID) -> FinancialView
-SendApplicationMessage(tableID, protocolVersion, payloadBytes)
-SubscribeApplicationMessages(tableID, cursor) -> attributed payload bytes
+Hello, Events, Respond, Subscribe, ReportState
+RequestDepositSpend, PrepareDeposit, SpendStatus, AwaitSpend
+ProposePayout, PayoutStatus, FinancialState, FinancialAuthority, FinancialKey
+ChainTip, BlockHash, Outpoint, UnconfirmedOutpoint
+Send, SendGC, SendFrame, ConnectionStatus
 ```
 
 `CreateTable`, `Invite`, `AcceptInvitation`, `ApproveFinancialOperation`,
@@ -237,26 +234,13 @@ not game-facing SDK methods. No SDK method approves, signs or broadcasts money.
 The SDK types are game-neutral:
 
 ```text
-TableTerms {
-  schema_version
-  game_id
-  game_protocol_version
-  network
-  participant_count
-  admission_deadline
-  seat_policy              // join_order | explicit | block_hash_shuffle
-  draw_height              // required only for block_hash_shuffle
-  draw_confirmations
-  bond: FinancialTerms     // amount may be zero
-  stake: FinancialTerms    // amount may be zero
-  payout_policy            // all_participants_sign
-}
-
-FinancialTerms {
-  template                 // bridge allowlisted template identifier
-  amount_atoms
-  confirmations
-  refund_delay_blocks
+membership.Terms {
+  Game, GameVer, SID
+  BuyInAtoms               // the stake each seat pays in
+  Seats
+  CSVBlocks                // relative timelock on every member's refund branch
+  Until                    // last height a join is admitted
+  BondAtoms, BondLockBlocks
 }
 
 ParticipantView {
@@ -279,8 +263,7 @@ table.roster_commit
 finance.stake
 finance.payout_proposal
 finance.payout_signature
-finance.payout_published
-finance.refund_published
+finance.payout_destination
 ```
 
 | Record | Author | Emit condition | Cardinality |
@@ -291,11 +274,11 @@ finance.refund_published
 | `finance.stake` | stake owner's dcrpulse | exact stake outpoint validated | once per owner/obligation |
 | `finance.payout_proposal` | proposer's dcrpulse | exact proposal passes bridge validation | once per proposal hash |
 | `finance.payout_signature` | signer's dcrpulse | exact proposal approved in dashboard | once per signer/proposal hash |
-| `finance.payout_published` | designated dcrpulse | signed transaction broadcast | once per proposal hash |
-| `finance.refund_published` | deposit owner's dcrpulse | mature refund approved and broadcast | once per obligation |
+| `finance.payout_destination` | participant's dcrpulse | destination taken from the bridge at accept time | once per participant/table |
 
-Seat draw is derived locally from the committed roster, immutable seat policy
-and selected block hash. Confirmation changes are local chain observations.
+Seat order is always the block-hash shuffle; there is no policy to select. It
+is drawn from the hash of the block after `Until`, derived locally from the
+committed roster. Confirmation changes are local chain observations.
 Neither produces periodic BR traffic.
 
 ### 1. Invitation and identity binding
@@ -366,9 +349,10 @@ reported winner.
 
 Each bridge publishes at most one `payout_signature` for an exact proposal and
 only after explicit dashboard approval. Cooperative payout requires every
-participant's required financial signature. A designated bridge publishes one
-`payout_published` after broadcast. If cooperation fails, each owner retains
-unilateral timelocked recovery of their own deposit.
+participant's required financial signature. Broadcast is not announced on the
+wire: once the signatures are complete, a bridge sends the transaction on its
+next reconcile pass. If cooperation fails, each owner retains unilateral
+timelocked recovery of their own deposit.
 
 ## Opaque game traffic
 
@@ -446,8 +430,6 @@ defined by the game and are not part of this invariant.
 
 ## Current defects this replaces
 
-- dcrpulse currently expects `gaming-frame`, while deployed brclientd emits
-  `gc-message`.
 - The dcrpulse gaming bus and financial inbox are transient and may drop frames.
 - The bridge can compute a stream gap before installing its frame subscriber.
 - The SDK drops unknown-table messages and rejects peer joins while the local

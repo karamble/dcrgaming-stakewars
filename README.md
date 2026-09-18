@@ -6,14 +6,15 @@ turns; every participant independently replays them.
 
 ## Current build
 
-The first cooperative multiplayer build connects the desktop to the SDK:
-invitation acceptance, bonded seating, signed map agreement, wallet-approved
-stakes, asynchronous signed turns, verified replay, cooperative payouts, and
-owner refunds. Two- and six-player integration tests use a local mTLS bridge
-and simulated funds. Live wallet/BR end-to-end validation remains outstanding.
+The desktop connects to the SDK for invitation acceptance, bonded seating,
+signed map agreement, wallet-approved stakes, asynchronous signed turns,
+verified replay and cooperative payouts. `make acceptance` plays the whole path
+against two wallets and two dcrpulse bridges on simnet; see
+[docs/simnet.md](docs/simnet.md).
 
-**Payout requires every player to sign.** A refusing player can veto winnings;
-each owner can reclaim their original unspent deposits after the locks, less fees.
+**Payout requires every player to sign.** A refusing player can veto winnings.
+Each owner reclaims their original unspent deposits in dcrpulse, under Gaming
+then Recovery, after the locks mature and less fees.
 Offline-skip consensus is not implemented; a missing turn can stall the match.
 See [first-playable instructions and limits](docs/first-playable.md).
 
@@ -33,10 +34,8 @@ See [OS defaults and configuration details](docs/first-playable.md).
 
 `make multiplayer-demo` opens two isolated desktop peers with simulated funds.
 
-- [Approved decisions](docs/decisions.md)
-- [Protocol findings and release gates](docs/protocol-findings.md)
-- [Hedgewars source analysis and design implications](docs/hedgewars-analysis.md)
-- [Product specification](prd-worms-clone.md)
+- [Payment model](docs/payment-model.md)
+- [Simnet acceptance harness](docs/simnet.md)
 - [Implementation specification](impl-spec.md)
 
 ## Build and run
@@ -106,9 +105,9 @@ go run ./cmd/stakewars-sim -verify /tmp/stakewars-run.json
 Previews: [lobby](artifacts/stakewars-lobby.png), [arena](artifacts/stakewars-arena.png).
 No wallet, bridge or network access occurs in these commands.
 
-The local SDK replacement is development-only. The inspected SDK revision is
-`e111edaf4574ac57277c7a5fe71cf301a654b7ae`; the replacement does not freeze that
-checkout. A portable immutable SDK dependency is still required for releases.
+The local SDK replacement is development-only: `go.mod` replaces the module
+with a sibling checkout, so the build follows whatever is in that working tree.
+A portable immutable SDK dependency is still required for releases.
 `-buildvcs=false` permits building this workspace, whose `.git` is empty.
 
 ## Verification boundaries
@@ -239,10 +238,9 @@ with collapsed bars. Weapon tiles explain selection restrictions.
 
 `make reliability` runs offline recovery and payment-script checks. Experimental
 journals now support persisted turn replay, restart/resend, bounded reordered
-messages, signing reservations and duplicate-funding prevention. Live bridge
-integration, off-chain skip agreement, cooperative payouts and owner refunds
-remain release blockers; this
-is not a real-money-ready build. See `docs/protocol-findings.md`.
+messages, signing reservations and duplicate-funding prevention. Off-chain skip
+agreement and an independent security review remain release blockers; this is
+not a real-money-ready build.
 
 ### Lobby settings and bridge setup
 
@@ -256,9 +254,14 @@ tab shows current bindings and lets you click an action to rebind it. The
 3. Click each credential field and paste the complete PEM contents with Ctrl+V
    (Command+V on macOS). Paste text, not a filename. Tab advances fields; Ctrl+A
    selects the field contents for replacement.
-4. Click **Connect** to verify the secure handshake, game identity and mainnet
-   network. **Save Settings** remembers credentials locally; **Disconnect** closes
-   the connection. Use `-connect` to connect automatically at startup.
+4. Click **Connect** to verify the secure handshake, game identity and network.
+   **Save Settings** remembers credentials locally; **Disconnect** closes the
+   connection. Use `-connect` to connect automatically at startup.
+
+The network defaults to mainnet and there is no selector; for simnet or
+testnet3, set `network` in the saved `bridge.json`. Registration in dcrpulse
+also needs a gaming policy naming the account to spend from, and that account
+cannot be a mixing account.
 
 The private key is always masked in the UI. Settings are stored unencrypted in
 `APPDATA/bridge.json` (default on Linux: `~/.dcrstakewars/bridge.json`)
@@ -280,7 +283,9 @@ Stakey after impact.
 ### Table room and scenery
 
 `make table-lobby` opens the **fictional, interactive preparation demo**. Click a
-player card for separate admission-bond, stake and table-bond details. Use the
+player card for admission-bond and stake details. The demo also shows a
+table-bond stage; live tables have no table bond, and an invitation carrying one
+is refused. Use the
 bottom controls to inspect 2/4/6-player layouts and preparation states, including
 map verification and connection loss. Live invitations arrive by clicking Accept
 in dcrpulse chat; no invitation copy/paste is needed. Live tables use the SDK

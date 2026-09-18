@@ -1,8 +1,8 @@
 # StakeWars — approved decisions
 
-Recorded 2026-09-15 from the project owner's instructions. This document takes
-precedence over conflicting passages in the original PRD and implementation
-specification. Technical proposals are not security guarantees.
+The project owner's decisions. This document takes precedence over conflicting
+passages in the implementation specification. Technical proposals are not
+security guarantees.
 
 ## Product and visuals
 
@@ -54,8 +54,8 @@ specification. Technical proposals are not security guarantees.
 
 **Not yet established:** how peers agree on the responder set and skip outcome
 despite delayed messages or partitions. Neither signatures nor local deadlines
-prove that another peer did not receive an answer. See the executable
-counterexamples in [protocol findings](protocol-findings.md).
+prove that another peer did not receive an answer. The executable
+counterexamples live in `internal/protocolcheck`.
 
 ## Money and verification
 
@@ -66,13 +66,14 @@ counterexamples in [protocol findings](protocol-findings.md).
 - Custom payout allocations must be agreed before funding and bound to the
   match. Allocation validation must cover ties, team splits, integer rounding
   and fees; their production encoding is not implemented yet.
-- SDK settlement takes gross shares totaling the funded pot. The SDK builder
-  subtracts the fee from positive payouts; do not deduct it twice.
-- Entry/seat bonds, stakes, liveness table bonds and forfeitable bonds are
-  distinct deposits. Use the per-table entry-bond model for StakeWars.
+- SDK settlement takes gross shares totaling the funded pot. dcrpulse subtracts
+  the fee from positive payouts; do not deduct it twice.
+- There are two deposits: the per-seat admission bond and the stake. Liveness
+  table bonds and forfeitable bonds are not funded, and an invitation carrying
+  table-bond terms is refused.
 - Real funding requests use the bridge's approval flow. Unknown payment status
   stays unknown until reconciled; no blind retry that asks for a second payment.
-- **Updated 2026-09-16:** winner payouts use cooperative N-of-N transaction
+- Winner payouts use cooperative N-of-N transaction
   signing, including eliminated players and players receiving zero. Every peer
   verifies the result and exact payout locally before signing.
 - Enforcing winnings against a refusing signer is not solved by the implemented
@@ -102,10 +103,9 @@ remains documented but is not a dependency for implementing this payment model.
 3. Build an internal gameplay prototype and a Stakey visual/movement showcase.
 4. Complete built-in gameplay content and integrate the reviewed asynchronous
    match protocol and SDK lifecycle.
-5. Test 2–6-seat funding, custom payouts, restarts and recovery on testnet; perform
-   security review, performance qualification and desktop packaging.
-
-Current implementation evidence is tracked in [implementation status](implementation-status.md).
+5. Test 2–6-seat funding, custom payouts, restarts and recovery on simnet with
+   two wallets and two bridges; perform security review, performance
+   qualification and desktop packaging.
 
 The original week estimates are not commitments. Protocol research has explicit
 results and blockers; it is not presumed to conclude with a safe construction.
@@ -137,7 +137,7 @@ preparation; paid admission is still explicitly refused. Consequently creation
 cannot yet complete/publish through dcrpulse. The current bridge contract has no
 outgoing create-table/plain-chat RPC for StakeWars to call.
 
-## Seating integration scope — 2026-09-16
+## Seating integration scope
 
 The user explicitly deferred changes to `dcrgaming-sdk` and the Dcrpulse gaming
 bridge/dashboard to separate later work. Do not silently expand StakeWars work
@@ -146,18 +146,13 @@ Buy-in, seats, admission deadline and advertised refund lock come from its
 invitation; StakeWars must not substitute a hardcoded buy-in.
 
 For the first preparation profile the user selected: a fixed gameplay preset,
-winner-takes-all with equal gross shares on a draw, admission and liveness bonds
-at the SDK minimum (0.01 DCR each), and an honesty bond of max(0.01 DCR, buy-in).
-Use SDK baseline confirmations and review-then-fund for post-seating deposits.
-Full funded preparation is the intended milestone, not permission to report an
+winner-takes-all with equal gross shares on a draw, and an admission bond at the
+SDK minimum of 0.01 DCR. No liveness or honesty bond is created. Use SDK
+baseline confirmations and review-then-fund for post-seating deposits. Full
+funded preparation is the intended milestone, not permission to report an
 unfunded seat as ready. Custom allocations remain a later supported feature.
 
-SDK pending-admission recovery defects currently prevent activating that
-integration under the unchanged-SDK constraint. Evidence and deferred work are
-in `docs/seating-sdk-blockers.md`. Mainnet paid-game implementation is intended;
-this dependency blocker must not be described as a refusal to implement it.
-
-## 2026-09-16 — SDK recovery implementation
+## SDK recovery implementation
 
 SDK changes are now authorized and implemented in the sibling repository.
 Poker and Battleships are unfinished references, not compatibility constraints;

@@ -12,9 +12,8 @@ mempool checks with synthetic UTXOs, including real contextual CSV maturity.
 These are not live-network or block-mining tests. Temporary overlays and exported
 fixtures are kept in the printed `/tmp/stakewars-poker-exit.*` directory.
 
-See [the audit](../../../docs/poker-exit-audit.md) for the transaction diagram,
-source revision, amounts, timing, counterexamples and design decision.
-
-The same command also tests an explicitly separate [pre-signed-answer repair](../../../docs/poker-ladder-repair.md):
-all eight linked rounds, destination tampering, missing backups, and contextual
-admission of both answer and take branches. This variant is not installed in Poker.
+The same command also tests a separate pre-signed-answer repair: all eight
+linked rounds, destination tampering, missing backups, and contextual admission
+of both answer and take branches. Neither the ladder nor the repair is used by
+this game; payouts are cooperative and a refusal is answered by waiting out the
+refund lock.

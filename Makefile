@@ -105,3 +105,11 @@ multiplayer-demo: dev
 multiplayer-check: export GOCACHE ?= /tmp/stakewars-go-cache
 multiplayer-check:
 	$(GO) test -race -count=1 -v ./internal/session ./internal/turnbatch ./internal/protocolcheck
+
+# Two independent wallets, bridges and games on simnet: bond, seat draw, stake,
+# a played match, a cooperative payout and a mature unilateral recovery. Builds
+# the whole stack from the sibling source trees and needs docker. Nothing here
+# touches mainnet. See docs/simnet.md.
+.PHONY: acceptance
+acceptance:
+	bash simnet/run-financial-authority.sh

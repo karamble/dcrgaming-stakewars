@@ -89,14 +89,13 @@ The policy suite also admits 102 ordinary parent-first transactions without a
 new block. That is dependency-policy evidence, not a cryptographic verifier or
 same-block mining demonstration.
 
-See [the research report](../../docs/settlement-cryptography-research.md) for the
-construction, security argument and outstanding requirements.
+These constructions are not used by the game. Payouts are cooperative.
 
 ## Practical Poker baseline
 
-`make poker-exit-check` runs the [Poker exit audit](../../docs/poker-exit-audit.md)
-against the actual sibling Poker scripts and stock dcrd mempool. The audit
-reproduces the payout veto and a bond answer that redirects to the owner wallet.
+`make poker-exit-check` runs the exit audit against the sibling Poker scripts
+and a stock dcrd mempool. It reproduces the payout veto and a bond answer that
+redirects to the owner wallet.
 
 ## Real simulation arithmetic
 

@@ -1,19 +1,21 @@
 # Accepted payment model
 
-**Approved by the project owner on 2026-09-16.** This supersedes earlier release
-requirements for enforcing the winner's payout against an uncooperative loser.
-The research remains available; it is not a product implementation dependency.
+There is no enforcement of the winner's payout against an uncooperative loser.
+A payout needs every seat's signature.
 
 ## Normal settlement
 
-1. Gameplay, deterministic replay, cheat detection and accusation/skip agreement
-   take place entirely off-chain over the BR gaming wire.
-2. Each peer independently verifies the result and derives the same payout
-   transaction from the agreed table terms, deposits, destinations and allocation.
-3. All participants sign every required input, including eliminated players and
-   zero-payout players. Signatures are checked and persisted before broadcast.
-4. Once complete, any holder of the fully signed transaction can broadcast it.
-   Signers need not remain online after supplying their signatures.
+1. Gameplay, deterministic replay, cheat detection and skip agreement take place
+   entirely off-chain over the BR gaming wire.
+2. Each peer independently verifies the result and proposes the same outcome to
+   its own dcrpulse. Shares are gross and must total the funded pot exactly;
+   dcrpulse deducts the transaction fee.
+3. Each dcrpulse builds the payout, asks its operator to approve it, and signs
+   with the wallet it controls. Signatures are exchanged over the wire. The game
+   holds no spending key and signs nothing.
+4. Once every seat has signed, one bridge broadcasts. That happens on a
+   reconcile pass rather than at the moment of approval, so a payout can be
+   fully signed for up to thirty seconds before it reaches the network.
 
 No game action, shot, heartbeat or accusation requires an on-chain transaction.
 Off-chain votes never substitute for a missing escrow transaction signature.
@@ -36,41 +38,42 @@ own amount, script, owner and unlock condition. Do not assume a stake refund
 also releases a bond. New forfeiture/accusation machinery is outside this decision
 and must not silently defeat the promised independent recovery route.
 
-## Required before funding is enabled
+## What dcrpulse guarantees
 
-- Verify every actual deposit script, amount, owner, roster, network and lock
-  against the agreed terms. Do not fund a script without the intended owner exit.
-- Durably retain outpoints, scripts/derivation data, terms and the information
-  needed to recover the signing key before losing the in-memory session.
-- Recovery must work after restart, an abandoned invitation, a dissolved table,
-  and when every other participant is offline. A restore must expose deposits
-  even when there is no active match.
-- Determine maturity from the authoritative chain, including confirmation height
-  and reorgs. A script-engine check alone does not establish input age.
-- Build refunds using only the owner's authorization, estimate fees and dust,
-  persist exact signed bytes before broadcast, and reconcile ambiguous results.
-- Track already-spent deposits. A confirmed settlement and a refund cannot both
-  spend the same output. At refund maturity, conflicting spends can race; no
-  interface should promise that the intended winner's transaction has priority.
-- Show the accepted risk before funding: **“Payout requires all players to sign.
-  If settlement fails, you can reclaim your original deposit after its lock,
-  minus fees. Winnings are not guaranteed.”** Show each deposit's unlock status
-  and a recovery action independent of the game screen.
+These are the bridge's obligations, not the game's. The game holds identity and
+log keys only.
 
-The first playable build integrates these cooperative settlement and refund
-paths through the SDK and desktop. Local mTLS integration checks use simulated
-funds; live wallet/BR validation and independent security review remain
-outstanding. See [first-playable.md](first-playable.md) for current limits.
+- Every deposit script, amount, owner, roster, network and lock is verified
+  against the agreed terms before the deposit is offered.
+- Outpoints, scripts, derivation data and terms are persisted before a payment
+  is offered, so recovery works after a restart, an abandoned invitation, a
+  dissolved table, and when every other participant is offline.
+- Maturity comes from the chain, including confirmation height and reorgs.
+- Refunds are built from the owner's authorization alone. Exact signed bytes are
+  persisted before broadcast, and an ambiguous result is reconciled rather than
+  retried.
+- A confirmed settlement and a refund cannot both spend the same output. At
+  refund maturity conflicting spends can race, and nothing promises the intended
+  winner's transaction priority.
+
+## What the player is told before funding
+
+**“Payout requires all players to sign. If settlement fails, you can reclaim
+your original deposit after its lock, minus fees. Winnings are not
+guaranteed.”** Each deposit's unlock status and its recovery action are shown
+outside the game screen, in dcrpulse under Gaming then Recovery.
+
+Settlement runs through the SDK and the desktop. The refund path does not: the
+game has no refund or reclaim call, and deposits are recovered in dcrpulse under
+Gaming then Recovery.
 
 ## Current evidence
 
-The SDK script tests cover cooperative payouts and owner-only stake refunds.
-`internal/protocolcheck/escrow_test.go` exercises every owner at table sizes
-2 through 6, rejects another player's key and insufficient sequence, and checks
-refund amounts. These are synthetic script-engine tests; they do not establish
-wallet recovery, actual confirmation age or UI availability.
+`internal/protocolcheck/escrow_test.go` exercises every owner at table sizes 2
+through 6, rejects another player's key and insufficient sequence, and checks
+refund amounts. These are script-engine tests and do not establish wallet
+recovery, confirmation age or UI availability.
 
-The Poker source audit separately exercises contextual node maturity and
-illustrates why its bond ladder cannot guarantee winner settlement. See
-[poker-exit-audit.md](poker-exit-audit.md). Historical research requirements and
-proposed on-chain computation are superseded by this decision as product scope.
+`simnet/run-financial-authority.sh` runs the whole path against two wallets and
+two bridges: bond, seat draw, stake, a played match, a cooperative payout and a
+mature unilateral recovery. See [simnet.md](simnet.md).

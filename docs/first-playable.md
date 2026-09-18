@@ -1,4 +1,4 @@
-# First playable build — 2026-09-16
+# Running a game
 
 ## Two game identities on one laptop
 
@@ -65,6 +65,20 @@ the default is 1024 KB per file, retaining ten rotations.
 can also be set in `dcrstakewars.conf`. Bridge certificates, private keys and
 identity seeds are not included in startup logs. Do not put PEM text in CLI args.
 
+## Before a table
+
+dcrpulse and its daemons need all of this, and each one fails silently without
+it. [simnet.md](simnet.md) covers the same list for a test stack.
+
+- dcrd running with `txindex=1`, or a co-signed payout is never broadcast.
+- dcrwallet started `--noinitialload`, so dcrpulse opens the wallet itself and
+  learns it can sign. Otherwise every gaming call answers `financial authority
+  is unavailable`.
+- The wallet reporting `synced` before any approval.
+- A gaming policy registered for `stakewars` with a bound account that is not a
+  mixing account.
+- The Bison Relay identity readable by dcrpulse at `/app-data/brclientd`.
+
 ## Table to battle
 
 1. Create the StakeWars table in dcrpulse; choose the seats, buy-in, admission
@@ -72,17 +86,21 @@ identity seeds are not included in startup logs. Do not put PEM text in CLI args
 2. Each player clicks the chat invitation's Accept button. The SDK handles
    admission; approve the admission payment in dcrpulse.
 3. StakeWars shows roster formation, confirmations and battlefield agreement.
-   The seating block is `Until + 1`; this build requires six confirmations of
-   that block before authorizing stake funding. Terrain, hazards, crates, wind
-   and initial squad positions all derive from the same signed world agreement.
-4. Set the payout/refund address in dcrpulse. Once the map is agreed, click
-   **Request stake funding**, or press **F**, then approve the payment in dcrpulse.
+   Seats are drawn from the block after the admission deadline, `Until + 1`, and
+   one confirmation of it is required before stake funding is authorized.
+   Terrain, hazards, crates, wind and initial squad positions all derive from
+   the same signed world agreement.
+4. Once the map is agreed, click **Request stake funding**, or press **F**, then
+   approve the payment in dcrpulse. The payout destination comes from dcrpulse
+   when the invitation is accepted; there is nothing to set in the game.
 5. When every stake is checked and payout addresses are known, press **Enter**
    in the table room to play. Only the active player controls a turn. Peers
    receive, authenticate, persist and independently replay the completed turn.
 6. The verified terminal result creates the cooperative payout. Every player,
-   including losers, signs the same transaction. The result screen distinguishes
-   collecting signatures from payout broadcast. Broadcast is not confirmation.
+   including losers, signs the same transaction. Approval in dcrpulse does not
+   broadcast it: a reconcile pass every thirty seconds does, so a fully signed
+   payout can sit at `publishing` for a moment. If it stays there, the node is
+   missing `txindex=1`.
 
 Space charges/fires; J jumps; Shift+J backflips; A/D move; W/S aim (or adjust an
 attached rope); Shift gives precision aim. Settings shows the complete key map.
@@ -90,26 +108,26 @@ Unfocused windows keep updating, which supports testing two instances locally.
 
 The initial payment preset uses the configured stake and one refundable
 0.01 DCR admission bond. It creates **no liveness or honesty bond**. The minimum
-stake is 0.001 DCR to leave room for payout/refund fees. The cooperative settlement
-fee is 0.001 DCR for the whole pot, deducted once from positive payouts. Admission
+stake is 0.001 DCR to leave room for payout/refund fees. The settlement fee is
+derived from transaction size, not fixed, and dcrpulse subtracts it pro-rata
+across the positive payouts — the shares the game proposes are gross. Admission
 bonds have a 2016-block owner refund lock; the stake uses the invitation's lock
-(minimum 288 blocks). These policies are bound by protocol version 3 and the
+(minimum 288 blocks). These policies are bound by protocol version 5 and the
 signed world manifest.
 
 ## Recovery and limitations
 
 **Winnings require every player's signature.** A refusing signer can prevent
-payout. Return to the table room and use **R / Refund stake** and **B / Refund
-entry** once the respective locks mature. The screen reports remaining blocks;
-the SDK independently rechecks scripts, values, unspent status and maturity
-before signing. These refunds return each owner's original unspent deposit,
-less fees. They do not award winnings. Tab cycles stored tables, including
-recovery-only tables. Restore the same directory and reconnect to recover after
-restart; configure a payout/refund address in dcrpulse again if requested.
+payout. Deposits are recovered in dcrpulse under Gaming then Recovery once their
+locks mature; the game has no refund call. Each refund returns that owner's
+original unspent deposit, less fees, and awards no winnings. Tab cycles stored
+tables, including recovery-only tables. Restore the same directory and reconnect
+to recover after a restart.
 
-A local signed turn is reserved durably before signing. Missing turns and SDK
-financial announcements are requested again periodically. Accepted turns replay
-from disk on restart; no peer-supplied final state authorizes a payout.
+A local signed turn is reserved durably before signing, and accepted turns
+replay from disk on restart. Missed traffic is recovered from Bison Relay group
+history rather than by asking peers. No peer-supplied final state authorizes a
+payout.
 
 This is the **first cooperative playable implementation**, not a completed
 adversarial consensus protocol or an independently audited real-money release.

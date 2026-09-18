@@ -1,12 +1,9 @@
 # Implementation Spec — StakeWars
 
-> **2026-09-15 implementation status:** [Approved decisions](docs/decisions.md)
-> take precedence over conflicting original details below. The first implemented
-> milestone is `internal/protocolcheck`, an offline characterization harness using
-> the real SDK escrow scripts and an experimental signed skip-vote model.
-> See [protocol findings](docs/protocol-findings.md) before implementing financial
-> finality. These tests do not authorize a mainnet release or establish safe
-> consensus under partitions.
+> [Approved decisions](docs/decisions.md) take precedence over conflicting
+> details below. `internal/protocolcheck` is an offline characterization harness
+> over the real SDK escrow scripts; its tests do not authorize a mainnet release
+> or establish safe consensus under partitions.
 
 **Audience:** the coding agent implementing this. Read end to end before writing code.
 **Companion:** the PRD covers *why*. This covers *what to build and in what order*. Where they disagree, this document wins on mechanics and the PRD wins on scope.
@@ -518,7 +515,6 @@ with `Entry` carrying `Version, PrevHash, Seq, Seat, Signer, Kind, Body, Height,
 | `w.place` | manual worm placement | `ClassTurn` |
 | `w.turn` | `TurnBatch` (§14.5) | `ClassTurn` |
 | `w.ack` | turn number + state hash | `ClassState` |
-| `w.resync` | request for a range | `ClassState` |
 | `w.evidence` | equivocation proof or divergence report | `ClassDispute` |
 
 ---
@@ -538,7 +534,7 @@ type Rules interface {
 }
 ```
 
-`Handle` receives one frame. The runtime has already framed, routed, reassembled and **checked the sender** — `Message.From` is an authenticated identity taken from the channel and the envelope, never from anything inside the body. Errors returned from `Handle` are logged and the message dropped; the runtime never retries, because a runtime that retried on the game's behalf would replay moves. If the game wants something redelivered it asks, with `w.resync`.
+`Handle` receives one frame. The runtime has already framed, routed, reassembled and **checked the sender** — `Message.From` is an authenticated identity taken from the channel and the envelope, never from anything inside the body. Errors returned from `Handle` are logged and the message dropped; the runtime never retries, because a runtime that retried on the game's behalf would replay moves. Missed traffic is recovered from Bison Relay group history, not by asking peers.
 
 `State` is called from the bridge's request loop. It must not block on game locks for long and **must not call back into the runtime**.
 
@@ -550,9 +546,6 @@ type Rules interface {
 |---|---|
 | `Send(ctx, match, kind, body, class)` | every outbound entry, with the class from §13.1 |
 | `Settle(ctx, match, Outcome{Shares, Void})` | match end; `Void: true` for a desync (§14.7) |
-| `Seize(ctx, match, seat, *evidence.Exposed)` | equivocation only |
-| `Accuse(ctx, match, seat, Lapsed)` | sustained silence only (§14.6) |
-| `Release` / `Reclaim` | clean end; timelock self-claim |
 | `Chain(ctx)`, `BlockHash(ctx, height)` | anchor (§12.1) and duty clocks |
 | `Seat`, `Seats`, `LogSeats` | the edge filter (§14.3) |
 | `LogKey(match)` | signs every chain entry |
@@ -616,9 +609,9 @@ Match parameters (`w.params`) must bind `sim_version`, built-in content/rules ha
 | | Unit | Enforced by | Missing it means |
 |---|---|---|---|
 | Game clock | ticks | peer consensus in the sim | you lose your turn; the worm does not fire |
-| Duty clock | block heights | `Accuse` → on-chain window | you stopped playing |
+| Duty clock | block heights | refusing to co-sign | you stopped playing |
 
-Decred blocks average five minutes and arrive in a Poisson process. A 45-second turn timer cannot be derived from them — the SDK says so in `Entry.Height`'s own documentation, and it is right. A missed turn is ordinary play and must never reach `Accuse`. Only sustained silence, several blocks wide, is accusable. Conflate these and every slow player gets an accusation chain opened against them.
+Decred blocks average five minutes and arrive in a Poisson process. A 45-second turn timer cannot be derived from them — the SDK says so in `Entry.Height`'s own documentation, and it is right. A missed turn is ordinary play. Only sustained silence, several blocks wide, justifies withholding a signature. Conflate these and every slow player loses their stake to a refusal.
 
 ### 14.7 Disputes
 
@@ -626,12 +619,12 @@ Two failures look identical on the wire and have opposite verdicts:
 
 | Symptom | Cause | Verdict |
 |---|---|---|
-| two conflicting heads signed by the **same** seat | equivocation | `Seize` with the recovered key |
+| two conflicting heads signed by the **same** seat | equivocation | retain the recovered key as evidence; withhold co-signing |
 | different state claims without same-seat equivocation | disagreement requiring replay and protocol diagnosis | retain evidence; no automatic refund or slash |
 
 **Test for equivocation first**, and only fall through to divergence. Treating an honest desync as an attack is the worst available outcome.
 
-`Seize` requires a key that opens the bond's forfeiture branch. A differing state hash alone supplies no key. Replay of agreed inputs can check a state claim, but majority voting is not proof of correctness and does not create a spendable settlement. Automatic voiding on a fabricated disagreement is disallowed by the paid-play requirements. See `docs/protocol-findings.md`.
+There is no forfeiture execution. A seat that equivocates publishes a key, and that key is evidence, but nothing in the runtime spends against it: the only response available is refusing to co-sign a payout, which leaves each seat its own deposit at the refund lock. Replay of agreed inputs can check a state claim, but majority voting is not proof of correctness and does not create a spendable settlement. Automatic voiding on a fabricated disagreement is disallowed.
 
 ### 14.8 Spectators
 
@@ -707,7 +700,7 @@ M2 is a legitimate stopping point if scope proves wrong.
 
 ### M3 — Netplay (~4–5 weeks)
 
-`connect` handshake and `runtime` wiring; `wschema` kinds; `wlog`; `TurnBatch` batching; anchor beacon; edge filter; inbox drain; desync detection; replay verify; `Settle`/`Accuse`/`Seize` paths.
+`connect` handshake and `runtime` wiring; `wschema` kinds; `wlog`; `TurnBatch` batching; anchor beacon; edge filter; inbox drain; desync detection; replay verify; `Settle` and co-signing paths.
 
 **Accept when:** peers complete testnet matches with matching verified states;
 corruption is detected and retained without automatically refunding a malicious

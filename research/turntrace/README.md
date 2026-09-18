@@ -56,4 +56,3 @@ SHA256 state commitments here are **research-only**; production `replay.Hash`
 uses BLAKE3 and is unchanged. The prefix is taken from an existing replay fixture,
 not asserted to be an authenticated completed-turn message.
 
-See [action enforcement direction](../../docs/action-enforcement-research.md).
