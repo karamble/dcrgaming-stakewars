@@ -355,7 +355,14 @@ func (c *Controller) refresh(ctx context.Context) {
 			continue
 		}
 		if snap.Record.RecoveryOnly || snap.Record.Aborted {
-			v.Status = "Table closed · deposits remain recoverable"
+			reason := snap.Record.Reason
+			if reason == "" {
+				reason = snap.Record.RecoveryReason
+			}
+			if reason == "" {
+				reason = "deposits remain recoverable"
+			}
+			v.Status = "Table closed · " + reason
 			continue
 		}
 		if len(snap.Seats) != int(rec.Terms.Seats) {
