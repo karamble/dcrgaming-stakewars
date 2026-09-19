@@ -61,19 +61,9 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 		t.Fatal(err)
 	}
 	directory := t.TempDir()
-	tables, err := rt.NewFileTableStore(directory + "/tables")
-	if err != nil {
-		t.Fatal(err)
-	}
-	store, err := spend.FileStore(directory + "/spends.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	book, err := spend.OpenBook(store)
-	if err != nil {
-		t.Fatal(err)
-	}
-	config := rt.Config{Rules: rules, Book: book, Identity: seed, Params: chaincfg.TestNet3Params(), Tables: tables, SeatTags: identity.SeatTags{Session: "StakeWars/session/v1", Log: "StakeWars/log/v1", Bond: "StakeWars/bond/v1"}}
+	// Params explicitly: the fake bridge has not said hello. TickEvery is off
+	// because this test moves the height itself.
+	config := rt.Config{Rules: rules, Identity: seed, Dir: directory, Params: chaincfg.TestNet3Params(), TickEvery: -1, SeatTags: identity.SeatTags{Session: "StakeWars/session/v1", Log: "StakeWars/log/v1", Bond: "StakeWars/bond/v1"}}
 	start := func(resume bool) (*rt.Runtime, func()) {
 		ctx, cancel := context.WithCancel(context.Background())
 		conn, err := srv.Dial(ctx, "seat0", func(c *transport.BridgeConfig) { connect.Stamp(c, rules.Identity()) })
@@ -82,16 +72,15 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 			t.Fatal(err)
 		}
 		config.Bridge = conn
-		runtime, err := rt.New(config)
+		runtime, err := rt.Open(config)
 		if err != nil {
 			cancel()
 			conn.Close()
 			t.Fatal(err)
 		}
 		if resume {
-			report, err := runtime.ResumeWithReport()
-			if err != nil || len(report.Restored) != 1 {
-				t.Fatalf("resume: %+v %v", report, err)
+			if report := runtime.Resumed(); len(report.Restored) != 1 {
+				t.Fatalf("resume: %+v", report)
 			}
 		}
 		done := make(chan error, 1)
@@ -125,7 +114,7 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 		records := runtime.Book().All()
 		return len(fake.Spends()) == 1 && len(records) == 1 && records[0].ID != ""
 	})
-	records, err := tables.LoadTables()
+	records, err := runtime.Tables().LoadTables()
 	if err != nil || len(records) != 1 || records[0].Terms != terms {
 		t.Fatalf("pending admission missing: %+v %v", records, err)
 	}
@@ -135,6 +124,11 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 	stop()
 	eventually(t, func() bool { return fake.Subscribers() == 0 })
 	if lostID {
+		// The runtime is stopped, so its book can be edited underneath it.
+		store, err := spend.FileStore(directory + "/spends.json")
+		if err != nil {
+			t.Fatal(err)
+		}
 		records, err := store.Load()
 		if err != nil {
 			t.Fatal(err)
@@ -144,11 +138,6 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 			t.Fatal(err)
 		}
 	}
-	reopened, err := spend.OpenBook(store)
-	if err != nil {
-		t.Fatal(err)
-	}
-	config.Book = reopened
 	restarted, _ := start(true)
 	if restarted.Terms("abcdef01") != terms {
 		t.Fatal("restored terms changed")

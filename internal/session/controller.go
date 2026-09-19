@@ -15,7 +15,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/decred/dcrd/chaincfg/v3"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/schnorr"
 	"github.com/decred/slog"
@@ -23,7 +22,6 @@ import (
 	gw "github.com/karamble/dcrgaming-sdk/pkg/gaming/wire"
 	"github.com/karamble/dcrgaming-sdk/pkg/identity"
 	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
-	"github.com/karamble/dcrgaming-sdk/pkg/spend"
 	"github.com/karamble/dcrstakewars/internal/bridgeconn"
 	"github.com/karamble/dcrstakewars/internal/durable"
 	"github.com/karamble/dcrstakewars/internal/seating"
@@ -113,31 +111,7 @@ func New(bridge *transport.Bridge, dir string) (*Controller, error) {
 	if bridge == nil {
 		return nil, fmt.Errorf("bridge required")
 	}
-	var params *chaincfg.Params
-	switch bridge.Network() {
-	case "mainnet":
-		params = chaincfg.MainNetParams()
-	case "testnet3":
-		params = chaincfg.TestNet3Params()
-	case "simnet":
-		params = chaincfg.SimNetParams()
-	default:
-		return nil, fmt.Errorf("bridge network has not been authenticated")
-	}
-
 	id, e := identity.Load(filepath.Join(dir, "identity"))
-	if e != nil {
-		return nil, e
-	}
-	tables, e := sdk.NewFileTableStore(filepath.Join(dir, "tables"))
-	if e != nil {
-		return nil, e
-	}
-	ss, e := spend.FileStore(filepath.Join(dir, "spends.json"))
-	if e != nil {
-		return nil, e
-	}
-	book, e := spend.OpenBook(ss)
 	if e != nil {
 		return nil, e
 	}
@@ -146,16 +120,14 @@ func New(bridge *transport.Bridge, dir string) (*Controller, error) {
 		return nil, e
 	}
 	r := &rules{bridge: bridge, records: map[string]sdk.TableRecord{}, worlds: map[string]worldMessage{}, approvals: map[string]map[string]worldMessage{}, problems: map[string]string{}, accepted: make(chan string, 64), inbox: make(chan sdk.Message, 256), allowed: map[string]bool{}, settled: map[string]string{}, receipts: reservations}
-	rt, e := sdk.New(sdk.Config{Log: sdkLog, Rules: r, Bridge: bridge, Book: book, Identity: id, Params: params, Tables: tables, SeatTags: identity.SeatTags{Session: "StakeWars/session/v1", Log: "StakeWars/log/v1", Bond: "StakeWars/bond/v1"}})
+	// The runtime keeps its spend book and table store under dir, and takes
+	// the chain from the network the bridge named when it said hello.
+	rt, e := sdk.Open(sdk.Config{Log: sdkLog, Rules: r, Bridge: bridge, Identity: id, Dir: dir, SeatTags: identity.SeatTags{Session: "StakeWars/session/v1", Log: "StakeWars/log/v1", Bond: "StakeWars/bond/v1"}})
 	if e != nil {
 		return nil, e
 	}
 	r.runtime = rt
-	c := &Controller{runtime: rt, rules: r, bridge: bridge, tables: tables, dir: dir, reservations: reservations, matches: map[string]*liveMatch{}, turns: make(chan turnCommand, 16), actions: make(chan string, 16), done: make(chan operation, 32), jobs: map[string]bool{}, activeJobs: map[string]bool{}, financialAt: map[string]time.Time{}, financial: map[string]sdk.TableSnapshot{}}
-	if _, e = rt.ResumeWithReport(); e != nil {
-		rt.Close()
-		return nil, e
-	}
+	c := &Controller{runtime: rt, rules: r, bridge: bridge, tables: rt.Tables(), dir: dir, reservations: reservations, matches: map[string]*liveMatch{}, turns: make(chan turnCommand, 16), actions: make(chan string, 16), done: make(chan operation, 32), jobs: map[string]bool{}, activeJobs: map[string]bool{}, financialAt: map[string]time.Time{}, financial: map[string]sdk.TableSnapshot{}}
 	return c, nil
 }
 func (c *Controller) Snapshot() View {
@@ -263,11 +235,6 @@ func (c *Controller) Run(ctx context.Context) error {
 		case e := <-result:
 			return e
 		case <-timer.C:
-			tickCtx, tickDone := context.WithTimeout(ctx, 8*time.Second)
-			if tip, err := c.runtime.Chain(tickCtx); err == nil {
-				c.runtime.Tick(tickCtx, tip.Height)
-			}
-			tickDone()
 			c.refresh(ctx)
 		case match := <-c.rules.accepted:
 			c.selected = match
@@ -430,9 +397,25 @@ func (c *Controller) refresh(ctx context.Context) {
 		}
 		count := 0
 		for _, d := range snap.Deposits {
-			if d.Purpose == "stake" && d.Check == "verified" {
+			switch {
+			case d.Purpose != "stake":
+			case d.Check == "verified":
 				count++
+			case d.Check == "spent" && uint32(m.mine) == d.Seat:
+				// Our own stake left escrow, so the payout confirmed.
+				// This is the only signal there is.
+				c.rules.noteSettled(rec.Match, snap.Record.PayoutID)
 			}
+		}
+		c.rules.mu.Lock()
+		m.settled = c.rules.settled[rec.Match]
+		c.rules.mu.Unlock()
+		if m.settled != "" {
+			v.Head = m.journal.Head()
+			v.Phase = "finished"
+			v.Settlement = m.settled
+			v.Status = "Payout broadcast · " + m.settled
+			continue
 		}
 		if c.runtime.PayoutFor(rec.Match) == "" {
 			v.Status = "Waiting for the bridge-owned payout destination"
@@ -670,9 +653,16 @@ func (c *Controller) receive(ctx context.Context, in sdk.Message) error {
 	}
 	return nil
 }
-func (r *rules) Settled(_ context.Context, match, txid string) {
+
+// noteSettled records that a payout landed. The SDK has no hook for this - a
+// settlement is learned by watching this seat's own stake become spent - so it
+// is called from the refresh loop rather than by the runtime.
+func (r *rules) noteSettled(match, txid string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.settled[match] == txid {
+		return
+	}
 	if err := r.receipts.Put(receiptKey(match), []byte(txid)); err != nil {
 		r.problems[match] = err.Error()
 		return
