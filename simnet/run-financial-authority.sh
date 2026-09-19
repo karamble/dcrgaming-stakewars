@@ -586,17 +586,29 @@ approve_pending 1 19680 "$cooperative_sid" stake
 approve_pending 2 19681 "$cooperative_sid" stake
 mine 1
 
+# A head only exists once both stakes are confirmed on chain, and a stake only
+# confirms as blocks arrive - so this wait mines, slowly and capped, the way the
+# other chain-dependent waits do. Without it the stakes sit at zero
+# confirmations and the head that never appears is blamed on the world.
+polls=0
+mined=0
 for _ in $(seq 1 360); do
   s1=$(curl -fsS http://127.0.0.1:19801/status 2>/dev/null || true)
   s2=$(curl -fsS http://127.0.0.1:19802/status 2>/dev/null || true)
   h1=$(jq -r '.headHash // ""' <<<"$s1" 2>/dev/null || true)
   h2=$(jq -r '.headHash // ""' <<<"$s2" 2>/dev/null || true)
   if test -n "$h1" && test "$h1" = "$h2" && jq -e '.worldAgreed == true' >/dev/null <<<"$s1" && jq -e '.worldAgreed == true' >/dev/null <<<"$s2"; then break; fi
+  polls=$((polls + 1))
+  if ((mined < MINE_WHILE_WAITING && polls % 8 == 0)); then mine 1; mined=$((mined + 1)); fi
   sleep .5
 done
-test -n "${h1:-}" && test "$h1" = "${h2:-}" || die "players did not agree on the initial world"
-initial_turn=$(jq -r .turn <<<"$s1")
-if test "$(jq -r .activeSeat <<<"$s1")" = "$(jq -r .mine <<<"$s1")"; then active_port=19801; else active_port=19802; fi
+test -n "${h1:-}" && test "$h1" = "${h2:-}" ||
+  die "players did not agree on the initial world: $(jq -r '.status // "no status"' <<<"${s1:-}")"
+# activeSeat and turn are marshalled with omitempty, so seat zero and turn zero
+# arrive as absent rather than 0. Default them, or the first turn of every match
+# is sent to the seat that is not playing.
+initial_turn=$(jq -r '.turn // 0' <<<"$s1")
+if test "$(jq -r '.activeSeat // 0' <<<"$s1")" = "$(jq -r '.mine // 0' <<<"$s1")"; then active_port=19801; else active_port=19802; fi
 curl -fsS -X POST -H content-type:application/json --data '{"mode":"fire"}' "http://127.0.0.1:$active_port/advance" >/dev/null
 for _ in $(seq 1 360); do
   s1=$(curl -fsS http://127.0.0.1:19801/status 2>/dev/null || true); s2=$(curl -fsS http://127.0.0.1:19802/status 2>/dev/null || true)
@@ -606,7 +618,7 @@ for _ in $(seq 1 360); do
   sleep .5
 done
 test "$h1" = "$h2" || die "players diverged after the fired turn"
-if test "$(jq -r .activeSeat <<<"$s1")" = "$(jq -r .mine <<<"$s1")"; then active_port=19801; else active_port=19802; fi
+if test "$(jq -r '.activeSeat // 0' <<<"$s1")" = "$(jq -r '.mine // 0' <<<"$s1")"; then active_port=19801; else active_port=19802; fi
 curl -fsS -X POST -H content-type:application/json --data '{"mode":"surrender"}' "http://127.0.0.1:$active_port/advance" >/dev/null
 wait_player_jq 19801 '.winner >= 0' >/dev/null
 wait_player_jq 19802 '.winner >= 0' >/dev/null
@@ -619,12 +631,17 @@ payout2=$(jq -r --arg table "$cooperative_sid" '.payouts[] | select(.table == $t
 test "$payout1" = "$payout2" || die "bridges derived different payout IDs"
 pulse_post 1 19680 /br/gaming/payouts "$(jq -nc --arg id "$payout1" --arg pass "$WALLET_PASS" '{id:$id,action:"approve",passphrase:$pass}')" >/dev/null
 pulse_post 2 19681 /br/gaming/payouts "$(jq -nc --arg id "$payout2" --arg pass "$WALLET_PASS" '{id:$id,action:"approve",passphrase:$pass}')" >/dev/null
+# Wait for this payout, by id, not for a mempool that merely has something in
+# it: the voting wallet's ticket buyer keeps its own transactions there, so a
+# non-empty mempool proves nothing. The payout's id is its transaction hash.
+seen=false
 for _ in $(seq 1 360); do
   mempool=$(dcrd_result getrawmempool 2>/dev/null || echo '[]')
-  test "$(jq length <<<"$mempool")" -gt 0 && break
+  seen=$(jq -r --arg id "$payout1" 'any(.[]?; . == $id)' <<<"$mempool" 2>/dev/null || echo false)
+  [[ $seen == true ]] && break
   sleep .5
 done
-test "$(jq length <<<"$mempool")" -gt 0 || die "cooperative payout was not broadcast"
+[[ $seen == true ]] || die "cooperative payout $payout1 was not broadcast"
 mine 1
 wait_pulse_jq --mine 1 19680 /br/gaming/payouts ".payouts | any(.id == \"$payout1\" and .state == \"confirmed\")" >/dev/null
 wait_pulse_jq --mine 2 19681 /br/gaming/payouts ".payouts | any(.id == \"$payout2\" and .state == \"confirmed\")" >/dev/null

@@ -28,18 +28,22 @@ import (
 )
 
 type status struct {
-	Connected       bool   `json:"connected"`
-	Status          string `json:"status"`
-	Error           string `json:"error,omitempty"`
-	Match           string `json:"match,omitempty"`
-	Phase           string `json:"phase,omitempty"`
-	Mine            uint8  `json:"mine"`
-	CanFund         bool   `json:"canFund"`
-	WorldAgreed     bool   `json:"worldAgreed"`
-	Height          uint32 `json:"height"`
-	Turn            uint32 `json:"turn,omitempty"`
-	ActiveSeat      uint8  `json:"activeSeat,omitempty"`
-	Winner          int8   `json:"winner,omitempty"`
+	Connected   bool   `json:"connected"`
+	Status      string `json:"status"`
+	Error       string `json:"error,omitempty"`
+	Match       string `json:"match,omitempty"`
+	Phase       string `json:"phase,omitempty"`
+	Mine        uint8  `json:"mine"`
+	CanFund     bool   `json:"canFund"`
+	WorldAgreed bool   `json:"worldAgreed"`
+	Height      uint32 `json:"height"`
+	// Zero is a real seat, a real turn and a real winner, so these are
+	// always reported. Omitting them makes seat zero indistinguishable from
+	// absent, and a reader that defaults the difference to the other seat
+	// sends every first turn to the player who is not holding it.
+	Turn            uint32 `json:"turn"`
+	ActiveSeat      uint8  `json:"activeSeat"`
+	Winner          int8   `json:"winner"`
 	HeadHash        string `json:"headHash,omitempty"`
 	Settlement      string `json:"settlement,omitempty"`
 	FinancialTables int    `json:"financialTables"`
