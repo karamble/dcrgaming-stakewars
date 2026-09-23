@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 func fixture(t *testing.T) (Context, *sim.State, *sim.State, []sim.Input, *secp256k1.PrivateKey) {

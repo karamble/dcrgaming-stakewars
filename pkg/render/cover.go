@@ -1,9 +1,9 @@
 package render
 
 import (
-	"github.com/karamble/dcrstakewars/assets/cover"
-	"github.com/karamble/dcrstakewars/assets/objects"
-	"github.com/karamble/dcrstakewars/assets/scenery"
+	"github.com/karamble/dcrgaming-stakewars/assets/cover"
+	"github.com/karamble/dcrgaming-stakewars/assets/objects"
+	"github.com/karamble/dcrgaming-stakewars/assets/scenery"
 	"image/color"
 	"math"
 )

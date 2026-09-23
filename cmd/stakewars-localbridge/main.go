@@ -17,7 +17,7 @@ import (
 	"github.com/decred/dcrd/chaincfg/v3"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/bridgetest"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/gamingpb"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 )
 
 func run() error {

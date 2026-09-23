@@ -7,10 +7,10 @@ import (
 	"image/png"
 	"os"
 
-	"github.com/karamble/dcrstakewars/internal/tablelobby"
-	"github.com/karamble/dcrstakewars/pkg/render"
-	"github.com/karamble/dcrstakewars/pkg/sim"
-	"github.com/karamble/dcrstakewars/pkg/sim/terrain"
+	"github.com/karamble/dcrgaming-stakewars/internal/tablelobby"
+	"github.com/karamble/dcrgaming-stakewars/pkg/render"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/terrain"
 )
 
 func main() {

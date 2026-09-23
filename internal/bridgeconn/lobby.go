@@ -11,7 +11,7 @@ import (
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/gamingpb"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/schema"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/transport"
-	"github.com/karamble/dcrstakewars/internal/payout"
+	"github.com/karamble/dcrgaming-stakewars/internal/payout"
 )
 
 const PaidUnavailable = "Paid seating is not enabled in this build. SDK recovery is implemented; lobby integration is pending. No funds requested."

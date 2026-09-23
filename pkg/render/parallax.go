@@ -1,8 +1,8 @@
 package render
 
 import (
-	"github.com/karamble/dcrstakewars/assets/scenery"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/assets/scenery"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 	"math"
 )
 

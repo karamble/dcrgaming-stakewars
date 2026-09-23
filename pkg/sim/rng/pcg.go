@@ -1,7 +1,7 @@
 // Package rng contains the frozen PCG-XSH-RR generator used by the simulation.
 package rng
 
-import "github.com/karamble/dcrstakewars/pkg/sim/fixed"
+import "github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
 
 type PCG struct{ state, inc uint64 }
 

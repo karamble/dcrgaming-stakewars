@@ -2,7 +2,7 @@ package sim
 
 import (
 	"bytes"
-	"github.com/karamble/dcrstakewars/pkg/sim/fixed"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
 	"testing"
 )
 

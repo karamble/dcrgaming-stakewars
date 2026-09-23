@@ -4,7 +4,7 @@ package tablelobby
 
 import (
 	"fmt"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 )
 
 type PaymentPhase uint8

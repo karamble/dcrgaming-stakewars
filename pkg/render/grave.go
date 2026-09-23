@@ -3,8 +3,8 @@ package render
 import (
 	"math"
 
-	"github.com/karamble/dcrstakewars/assets/objects"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/assets/objects"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 // Markers have no collision or simulation state. Reconstruct their position

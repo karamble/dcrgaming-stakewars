@@ -11,7 +11,7 @@ import (
 	"github.com/decred/dcrd/crypto/ripemd160"
 	t "github.com/decred/dcrd/txscript/v4"
 	"github.com/decred/dcrd/wire"
-	wots "github.com/karamble/dcrstakewars/research/settlement/wots"
+	wots "github.com/karamble/dcrgaming-stakewars/research/settlement/wots"
 	"os"
 	"path/filepath"
 )

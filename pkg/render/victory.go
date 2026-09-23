@@ -6,7 +6,7 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 var VictoryAgainRect = image.Rect(80, 777, 390, 835)

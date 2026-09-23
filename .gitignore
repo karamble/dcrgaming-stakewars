@@ -1,6 +1,21 @@
 # Generated screenshots and visual previews.
 /artifacts/
 
+# Local build outputs and downloaded tools.
+/bin/
+/dist/
+/.tools/
+/stakewars
+/stakewars-dev
+/stakewars-preview
+/stakewars-sim
+/stakewars-simnet-player
+/stakewars-localbridge
+/simvet
+*.exe
+*.test
+*.log
+
 # Generated Python bytecode from settlement research.
 __pycache__/
 *.pyc

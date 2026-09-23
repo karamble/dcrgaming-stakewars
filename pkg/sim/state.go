@@ -5,9 +5,9 @@ package sim
 import (
 	"errors"
 
-	"github.com/karamble/dcrstakewars/pkg/sim/fixed"
-	"github.com/karamble/dcrstakewars/pkg/sim/rng"
-	"github.com/karamble/dcrstakewars/pkg/sim/terrain"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/rng"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/terrain"
 )
 
 const Version uint32 = 17

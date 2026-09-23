@@ -17,9 +17,9 @@ import (
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/transport"
 	"github.com/karamble/dcrgaming-sdk/pkg/membership"
 	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
-	"github.com/karamble/dcrstakewars/internal/durable"
-	"github.com/karamble/dcrstakewars/internal/seating"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/durable"
+	"github.com/karamble/dcrgaming-stakewars/internal/seating"
 )
 
 type worldMessage struct {

@@ -1,7 +1,7 @@
 package render
 
 import (
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 	"image"
 	"math"
 )

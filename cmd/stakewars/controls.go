@@ -12,8 +12,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/karamble/dcrstakewars/pkg/render"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/render"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 var controlActions = []string{"left", "right", "aimUp", "aimDown", "jump", "highJump", "fire", "precision", "previous", "next", "rope", "teleport", "skip"}

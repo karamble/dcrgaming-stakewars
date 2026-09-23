@@ -5,9 +5,9 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/karamble/dcrstakewars/assets/objects"
-	"github.com/karamble/dcrstakewars/assets/weapons"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/assets/objects"
+	"github.com/karamble/dcrgaming-stakewars/assets/weapons"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 const AnimationSpeed = 3

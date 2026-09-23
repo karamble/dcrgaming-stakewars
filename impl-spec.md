@@ -25,7 +25,7 @@ Two rules that override everything else in this document:
 ## 1. Repository and toolchain
 
 ```
-module github.com/karamble/dcrstakewars
+module github.com/karamble/dcrgaming-stakewars
 go 1.25.0
 ```
 
@@ -727,7 +727,7 @@ These are decisions for the project owner. If one blocks you, stop and ask rathe
 4. **Resolved:** original competitive rope feel.
 5. Map resolution ceiling above 4096×2048.
 6. **Resolved:** Stakey squads, Decred colors, polished sci-fi artwork generated and refined against the comic references.
-7. **Resolved:** StakeWars; module `github.com/karamble/dcrstakewars`.
+7. **Resolved:** StakeWars; module `github.com/karamble/dcrgaming-stakewars`.
 
 ---
 

@@ -7,8 +7,8 @@ import (
 	"math"
 	"strings"
 
-	"github.com/karamble/dcrstakewars/internal/seating"
-	"github.com/karamble/dcrstakewars/internal/tablelobby"
+	"github.com/karamble/dcrgaming-stakewars/internal/seating"
+	"github.com/karamble/dcrgaming-stakewars/internal/tablelobby"
 )
 
 var LobbyTablesRect = image.Rect(480, 675, 780, 731)

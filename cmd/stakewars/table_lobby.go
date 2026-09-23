@@ -5,8 +5,8 @@ package main
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/karamble/dcrstakewars/internal/tablelobby"
-	"github.com/karamble/dcrstakewars/pkg/render"
+	"github.com/karamble/dcrgaming-stakewars/internal/tablelobby"
+	"github.com/karamble/dcrgaming-stakewars/pkg/render"
 	"image"
 )
 

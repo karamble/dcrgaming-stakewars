@@ -21,10 +21,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
-	"github.com/karamble/dcrstakewars/internal/session"
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/session"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 type status struct {

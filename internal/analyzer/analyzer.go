@@ -10,7 +10,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-const SimPrefix = "github.com/karamble/dcrstakewars/pkg/sim"
+const SimPrefix = "github.com/karamble/dcrgaming-stakewars/pkg/sim"
 
 func New(prefix string) *analysis.Analyzer {
 	return &analysis.Analyzer{Name: "simdet", Doc: "check simulation determinism boundaries", Run: func(pass *analysis.Pass) (any, error) {

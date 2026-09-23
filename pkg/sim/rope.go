@@ -1,6 +1,6 @@
 package sim
 
-import "github.com/karamble/dcrstakewars/pkg/sim/fixed"
+import "github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
 
 func (s *State) attach(w *Worm) {
 	origin := w.Pos

@@ -1,4 +1,4 @@
-module github.com/karamble/dcrstakewars/research/settlement
+module github.com/karamble/dcrgaming-stakewars/research/settlement
 
 go 1.23
 

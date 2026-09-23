@@ -6,8 +6,8 @@ import (
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
-	"github.com/karamble/dcrstakewars/pkg/render"
-	"github.com/karamble/dcrstakewars/pkg/sound"
+	"github.com/karamble/dcrgaming-stakewars/pkg/render"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sound"
 )
 
 type speaker struct {

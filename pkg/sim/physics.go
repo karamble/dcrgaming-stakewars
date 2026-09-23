@@ -1,6 +1,6 @@
 package sim
 
-import "github.com/karamble/dcrstakewars/pkg/sim/fixed"
+import "github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
 
 const halfWidth, bodyHeight = 6, 20
 

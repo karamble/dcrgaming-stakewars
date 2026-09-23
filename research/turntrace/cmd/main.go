@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	tr "github.com/karamble/dcrstakewars/research/turntrace"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	tr "github.com/karamble/dcrgaming-stakewars/research/turntrace"
 	"os"
 )
 

@@ -2,9 +2,9 @@ package main
 
 import (
 	tscript "github.com/decred/dcrd/txscript/v4"
-	"github.com/karamble/dcrstakewars/pkg/sim"
-	"github.com/karamble/dcrstakewars/pkg/sim/fixed"
-	"github.com/karamble/dcrstakewars/pkg/sim/terrain"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/terrain"
 	"testing"
 )
 

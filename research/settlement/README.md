@@ -18,7 +18,7 @@ maturity with mainnet parameters and dcrd's existing fake-chain harness. It does
 not broadcast, mine blocks or connect to a wallet. Temporary fixtures are kept
 in the directory printed by the command.
 
-The nested module uses the sibling layout `github.com/karamble/dcrstakewars`
+The nested module uses the sibling layout `github.com/karamble/dcrgaming-stakewars`
 and `github.com/decred/dcrd`. It is separate from StakeWars' application module.
 The tested dcrd checkout is `b9634e01`; dependency replacements explicitly use
 its txscript, wire and secp256k1 modules.

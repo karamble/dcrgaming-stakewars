@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/karamble/dcrgaming-sdk/pkg/forfeit"
-	"github.com/karamble/dcrstakewars/internal/durable"
+	"github.com/karamble/dcrgaming-stakewars/internal/durable"
 )
 
 // World preparation occupies checkpoint sequence zero. Gameplay must start its

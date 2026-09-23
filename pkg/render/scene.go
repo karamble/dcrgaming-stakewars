@@ -8,10 +8,10 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/karamble/dcrstakewars/assets/cover"
-	materials "github.com/karamble/dcrstakewars/assets/terrain"
-	"github.com/karamble/dcrstakewars/assets/weapons"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/assets/cover"
+	materials "github.com/karamble/dcrgaming-stakewars/assets/terrain"
+	"github.com/karamble/dcrgaming-stakewars/assets/weapons"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 const Width, Height = 1440, 900

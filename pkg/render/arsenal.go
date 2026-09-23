@@ -7,8 +7,8 @@ import (
 	"math"
 	"strings"
 
-	"github.com/karamble/dcrstakewars/assets/weapons"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/assets/weapons"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 var hudGlass = color.RGBA{10, 22, 39, 174}

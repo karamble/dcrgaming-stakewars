@@ -7,8 +7,8 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/karamble/dcrstakewars/internal/durable"
-	"github.com/karamble/dcrstakewars/internal/payout"
+	"github.com/karamble/dcrgaming-stakewars/internal/durable"
+	"github.com/karamble/dcrgaming-stakewars/internal/payout"
 )
 
 type Kind uint8

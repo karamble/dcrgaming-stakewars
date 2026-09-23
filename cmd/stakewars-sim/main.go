@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 func main() {

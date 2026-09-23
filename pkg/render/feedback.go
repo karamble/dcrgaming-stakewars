@@ -2,7 +2,7 @@ package render
 
 import (
 	"fmt"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 	"image/color"
 )
 

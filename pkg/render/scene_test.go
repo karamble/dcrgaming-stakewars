@@ -4,9 +4,9 @@ import (
 	"image"
 	"testing"
 
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
-	"github.com/karamble/dcrstakewars/pkg/sim/terrain"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/terrain"
 )
 
 func TestDrawingDoesNotChangeSimulation(t *testing.T) {

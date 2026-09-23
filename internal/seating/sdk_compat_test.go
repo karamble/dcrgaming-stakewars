@@ -17,7 +17,7 @@ import (
 	"github.com/karamble/dcrgaming-sdk/pkg/membership"
 	rt "github.com/karamble/dcrgaming-sdk/pkg/runtime"
 	"github.com/karamble/dcrgaming-sdk/pkg/spend"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 )
 
 type fixtureRules struct{ terms membership.Terms }

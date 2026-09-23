@@ -6,7 +6,7 @@ security guarantees.
 
 ## Product and visuals
 
-- Product name: **StakeWars**. Go module: `github.com/karamble/dcrstakewars`.
+- Product name: **StakeWars**. Go module: `github.com/karamble/dcrgaming-stakewars`.
 - Go/Ebiten native desktop game for Linux, Windows and macOS.
 - Full artillery-game mechanical scope from the PRD, with 2–6 players and up to
   eight characters per squad. First public release is not limited to duels.

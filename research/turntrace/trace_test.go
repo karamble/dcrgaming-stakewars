@@ -1,7 +1,7 @@
 package turntrace
 
 import (
-	"github.com/karamble/dcrstakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
 	"os"
 	"testing"
 )

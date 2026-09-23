@@ -2,8 +2,8 @@ package sim
 
 import (
 	"errors"
-	"github.com/karamble/dcrstakewars/pkg/sim/fixed"
-	"github.com/karamble/dcrstakewars/pkg/sim/terrain"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/terrain"
 )
 
 // buildTerrain composes built-in silhouettes, not a single-valued height map.

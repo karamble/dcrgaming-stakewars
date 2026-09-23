@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/karamble/dcrstakewars/pkg/sim/fixed"
-	"github.com/karamble/dcrstakewars/pkg/sim/terrain"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/terrain"
 )
 
 func TestDrillEscapesBurialAndKeepsAttack(t *testing.T) {

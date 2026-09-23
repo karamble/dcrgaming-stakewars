@@ -9,7 +9,7 @@ import (
 )
 
 func TestSimulationHasNoExternalDependencies(t *testing.T) {
-	cmd := exec.Command("go", "list", "-deps", "-json", "github.com/karamble/dcrstakewars/pkg/sim/...")
+	cmd := exec.Command("go", "list", "-deps", "-json", "github.com/karamble/dcrgaming-stakewars/pkg/sim/...")
 	data, err := cmd.Output()
 	if err != nil {
 		t.Fatal(err)
@@ -25,7 +25,7 @@ func TestSimulationHasNoExternalDependencies(t *testing.T) {
 		} else if err != nil {
 			t.Fatal(err)
 		}
-		if !pkg.Standard && pkg.ImportPath != "github.com/karamble/dcrstakewars/pkg/sim" && !strings.HasPrefix(pkg.ImportPath, "github.com/karamble/dcrstakewars/pkg/sim/") {
+		if !pkg.Standard && pkg.ImportPath != "github.com/karamble/dcrgaming-stakewars/pkg/sim" && !strings.HasPrefix(pkg.ImportPath, "github.com/karamble/dcrgaming-stakewars/pkg/sim/") {
 			t.Errorf("external dependency in sim graph: %s", pkg.ImportPath)
 		}
 	}

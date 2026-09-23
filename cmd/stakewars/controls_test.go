@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 func TestControlsLoadDefaultsAndCustomKeys(t *testing.T) {

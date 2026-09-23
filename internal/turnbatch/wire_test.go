@@ -6,7 +6,7 @@ import (
 	"time"
 
 	sdkwire "github.com/karamble/dcrgaming-sdk/pkg/gaming/wire"
-	"github.com/karamble/dcrstakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
 )
 
 // Bison Relay carries these as discrete stored messages. Chunking a completed

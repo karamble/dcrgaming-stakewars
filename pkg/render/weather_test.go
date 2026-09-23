@@ -1,8 +1,8 @@
 package render
 
 import (
-	"github.com/karamble/dcrstakewars/pkg/sim"
-	"github.com/karamble/dcrstakewars/pkg/sim/fixed"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
 	"testing"
 )
 

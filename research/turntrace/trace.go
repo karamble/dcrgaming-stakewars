@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 type Hash [32]byte

@@ -5,11 +5,11 @@ package main
 import (
 	"fmt"
 	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
-	"github.com/karamble/dcrstakewars/internal/tablelobby"
-	"github.com/karamble/dcrstakewars/pkg/render"
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/tablelobby"
+	"github.com/karamble/dcrgaming-stakewars/pkg/render"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 func liveInvitation(r sdk.TableRecord) bridgeconn.Invitation {

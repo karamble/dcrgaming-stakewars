@@ -2,7 +2,7 @@ package funding
 
 import (
 	"errors"
-	"github.com/karamble/dcrstakewars/internal/durable"
+	"github.com/karamble/dcrgaming-stakewars/internal/durable"
 	"sync"
 	"sync/atomic"
 	"testing"

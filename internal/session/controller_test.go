@@ -14,8 +14,8 @@ import (
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/connect"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/gamingpb"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/transport"
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 func waitSession(t *testing.T, label string, cs []*Controller, f func() bool) {

@@ -5,7 +5,7 @@ package main
 import (
 	"github.com/karamble/dcrgaming-sdk/pkg/membership"
 	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 	"testing"
 )
 

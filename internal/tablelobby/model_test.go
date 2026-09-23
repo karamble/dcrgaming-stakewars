@@ -3,7 +3,7 @@ package tablelobby
 import (
 	"testing"
 
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 )
 
 func TestUnknownAndStaleEvidenceNeverReady(t *testing.T) {

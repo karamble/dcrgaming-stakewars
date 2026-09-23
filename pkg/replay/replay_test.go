@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 func TestRoundTripAndTamperDetection(t *testing.T) {

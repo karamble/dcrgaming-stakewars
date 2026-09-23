@@ -11,12 +11,12 @@ import (
 	"errors"
 	"fmt"
 	flags "github.com/jessevdk/go-flags"
-	"github.com/karamble/dcrstakewars/internal/appconfig"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
-	"github.com/karamble/dcrstakewars/internal/logging"
-	"github.com/karamble/dcrstakewars/internal/session"
-	"github.com/karamble/dcrstakewars/internal/tablelobby"
-	"github.com/karamble/dcrstakewars/internal/turnbatch"
+	"github.com/karamble/dcrgaming-stakewars/internal/appconfig"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/logging"
+	"github.com/karamble/dcrgaming-stakewars/internal/session"
+	"github.com/karamble/dcrgaming-stakewars/internal/tablelobby"
+	"github.com/karamble/dcrgaming-stakewars/internal/turnbatch"
 	"image"
 	"image/png"
 
@@ -25,8 +25,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/karamble/dcrstakewars/pkg/render"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/pkg/render"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 type game struct {

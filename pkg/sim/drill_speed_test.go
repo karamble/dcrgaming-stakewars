@@ -1,8 +1,8 @@
 package sim
 
 import (
-	"github.com/karamble/dcrstakewars/pkg/sim/fixed"
-	"github.com/karamble/dcrstakewars/pkg/sim/terrain"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/fixed"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim/terrain"
 	"testing"
 )
 

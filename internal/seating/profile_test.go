@@ -1,7 +1,7 @@
 package seating
 
 import (
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 	"testing"
 )
 

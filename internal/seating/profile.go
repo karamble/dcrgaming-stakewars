@@ -5,8 +5,8 @@ package seating
 import (
 	"fmt"
 	"github.com/karamble/dcrgaming-sdk/pkg/membership"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
-	"github.com/karamble/dcrstakewars/internal/payout"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/payout"
 )
 
 const ProtocolVersion = 5

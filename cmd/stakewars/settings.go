@@ -5,7 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/karamble/dcrstakewars/internal/session"
+	"github.com/karamble/dcrgaming-stakewars/internal/session"
 	"image"
 	"io"
 	"os/exec"
@@ -16,8 +16,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
-	"github.com/karamble/dcrstakewars/pkg/render"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/pkg/render"
 )
 
 type connectionUpdate struct {

@@ -2,8 +2,8 @@ package render
 
 import (
 	"fmt"
-	"github.com/karamble/dcrstakewars/assets/weapons"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/assets/weapons"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 	"image"
 	"image/color"
 	"math"

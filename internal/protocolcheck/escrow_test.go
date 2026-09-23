@@ -14,7 +14,7 @@ import (
 	"github.com/decred/dcrd/txscript/v4/stdaddr"
 	"github.com/decred/dcrd/wire"
 	"github.com/karamble/dcrgaming-sdk/pkg/finance"
-	"github.com/karamble/dcrstakewars/internal/payout"
+	"github.com/karamble/dcrgaming-stakewars/internal/payout"
 )
 
 const (

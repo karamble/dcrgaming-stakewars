@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	"github.com/karamble/dcrgaming-sdk/pkg/membership"
-	"github.com/karamble/dcrstakewars/internal/payout"
-	"github.com/karamble/dcrstakewars/pkg/replay"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/internal/payout"
+	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 	"lukechampine.com/blake3"
 )
 

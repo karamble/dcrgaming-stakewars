@@ -22,11 +22,11 @@ import (
 	gw "github.com/karamble/dcrgaming-sdk/pkg/gaming/wire"
 	"github.com/karamble/dcrgaming-sdk/pkg/identity"
 	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
-	"github.com/karamble/dcrstakewars/internal/bridgeconn"
-	"github.com/karamble/dcrstakewars/internal/durable"
-	"github.com/karamble/dcrstakewars/internal/seating"
-	"github.com/karamble/dcrstakewars/internal/turnbatch"
-	"github.com/karamble/dcrstakewars/pkg/sim"
+	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/durable"
+	"github.com/karamble/dcrgaming-stakewars/internal/seating"
+	"github.com/karamble/dcrgaming-stakewars/internal/turnbatch"
+	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
 
 var sessionLog = slog.Disabled

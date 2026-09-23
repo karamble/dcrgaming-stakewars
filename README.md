@@ -1,5 +1,9 @@
 # StakeWars
 
+Repository and Go module: `github.com/karamble/dcrgaming-stakewars`.
+The player-facing name, executable, existing profile locations and bridge
+protocol identifiers are unchanged by the repository rename.
+
 Turn-based peer-to-peer artillery combat with Stakey squads, destructible
 terrain and Decred stakes. Asynchronous Bison Relay messages carry completed
 turns; every participant independently replays them.
@@ -46,7 +50,7 @@ builds, and the SDK sibling checkout:
 ```text
 karamble/
   dcrgaming-sdk/
-  dcrstakewars/
+  dcrgaming-stakewars/
 ```
 
 ```sh
