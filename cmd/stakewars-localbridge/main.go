@@ -30,7 +30,7 @@ func run() error {
 		return err
 	}
 	fmt.Printf("SIMULATED FUNDS ONLY. Demo state: %s\n", root)
-	fake := bridgetest.New(bridgetest.Options{Game: "stakewars", Network: "mainnet", Params: chaincfg.MainNetParams(), Height: 800})
+	fake := bridgetest.New(bridgetest.Options{Game: "stakewars", Network: "mainnet", Params: chaincfg.MainNetParams(), Height: 800, Fees: bridgetest.RelayFees()})
 	server, err := fake.Serve("one", "two")
 	if err != nil {
 		return err

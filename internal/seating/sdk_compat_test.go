@@ -49,7 +49,7 @@ func checkSDKPendingAdmissionRecovery(t *testing.T, lostID bool) {
 		t.Fatal(err)
 	}
 	rules := fixtureRules{terms}
-	fake := bridgetest.New(bridgetest.Options{Game: "stakewars", Network: "testnet3", Params: chaincfg.TestNet3Params(), Height: 800})
+	fake := bridgetest.New(bridgetest.Options{Game: "stakewars", Network: "testnet3", Params: chaincfg.TestNet3Params(), Height: 800, Fees: bridgetest.RelayFees()})
 	fake.SetVerdict(bridgetest.Hold, "")
 	srv, err := fake.Serve("seat0")
 	if err != nil {

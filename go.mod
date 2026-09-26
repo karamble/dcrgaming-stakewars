@@ -7,7 +7,7 @@ require (
 	github.com/decred/dcrd/chaincfg/v3 v3.3.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
 	github.com/decred/dcrd/txscript/v4 v4.1.2
-	github.com/decred/dcrd/wire v1.7.1
+	github.com/decred/dcrd/wire v1.7.2
 	github.com/hajimehoshi/ebiten/v2 v2.9.9
 	github.com/karamble/dcrgaming-sdk v0.0.0
 	golang.org/x/image v0.31.0
@@ -16,6 +16,8 @@ require (
 )
 
 require (
+	decred.org/dcrwallet/v5 v5.0.2 // indirect
+	github.com/decred/dcrd/blockchain/standalone/v2 v2.2.2 // indirect
 	github.com/decred/dcrd/crypto/rand v1.0.1 // indirect
 	golang.org/x/crypto v0.51.0 // indirect
 )
@@ -37,7 +39,7 @@ require (
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/jezek/xgb v1.1.1 // indirect
 	github.com/jrick/logrotate v1.1.2
-	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect

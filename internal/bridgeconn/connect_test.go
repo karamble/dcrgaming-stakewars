@@ -14,7 +14,7 @@ import (
 
 func fixture(t *testing.T, game, network string) Config {
 	t.Helper()
-	server, err := bridgetest.New(bridgetest.Options{Game: game, Network: network}).Serve("stakewars")
+	server, err := bridgetest.New(bridgetest.Options{Game: game, Network: network, Fees: bridgetest.RelayFees()}).Serve("stakewars")
 	if err != nil {
 		t.Fatal(err)
 	}

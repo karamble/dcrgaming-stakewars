@@ -38,7 +38,7 @@ func TestPreviewRejectsAmbiguousOrIncompleteTerms(t *testing.T) {
 }
 
 func TestLobbyReceivesRequestsWithoutFundingAndRecovers(t *testing.T) {
-	fake := bridgetest.New(bridgetest.Options{Game: GameID, Network: Network})
+	fake := bridgetest.New(bridgetest.Options{Game: GameID, Network: Network, Fees: bridgetest.RelayFees()})
 	server, err := fake.Serve("stakewars")
 	if err != nil {
 		t.Fatal(err)

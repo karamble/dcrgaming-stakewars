@@ -114,7 +114,7 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 	for i := range names {
 		names[i] = fmt.Sprint("seat", i)
 	}
-	fake := bridgetest.New(bridgetest.Options{Game: "stakewars", Network: "simnet", Params: chaincfg.SimNetParams(), Height: 800})
+	fake := bridgetest.New(bridgetest.Options{Game: "stakewars", Network: "simnet", Params: chaincfg.SimNetParams(), Height: 800, Fees: bridgetest.RelayFees()})
 	server, err := fake.Serve(names...)
 	if err != nil {
 		t.Fatal(err)

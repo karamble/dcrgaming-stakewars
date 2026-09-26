@@ -14,6 +14,7 @@ import (
 	"github.com/decred/dcrd/txscript/v4/stdaddr"
 	"github.com/decred/dcrd/wire"
 	"github.com/karamble/dcrgaming-sdk/pkg/finance"
+	"github.com/karamble/dcrgaming-sdk/pkg/gaming/bridgetest"
 	"github.com/karamble/dcrgaming-stakewars/internal/payout"
 )
 
@@ -60,7 +61,7 @@ func settlement(t *testing.T, n int, shares []int64) (*wire.MsgTx, []finance.Inp
 			proposal.Payments = append(proposal.Payments, finance.Payment{Key: pub, Atoms: shares[i]})
 		}
 	}
-	built, err := finance.BuildPayout(proposal, destinations, chaincfg.SimNetParams())
+	built, err := finance.BuildPayout(proposal, destinations, chaincfg.SimNetParams(), bridgetest.RelayFees())
 	if err != nil {
 		t.Fatal(err)
 	}
