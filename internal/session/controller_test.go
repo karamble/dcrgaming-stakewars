@@ -206,6 +206,7 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 	if replay.Hash(cs[0].Snapshot().Head) != replay.Hash(cs[1].Snapshot().Head) {
 		t.Fatal("genesis differs")
 	}
+	noRepeatedFrames(t, fake.Sent())
 	if players == 2 && !refunds {
 		before := len(fake.Sent())
 		time.Sleep(6 * time.Second)
@@ -236,6 +237,7 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 		if len(fake.Spends()) != players*2 {
 			t.Fatal("recovery requested a new deposit")
 		}
+		noRepeatedFrames(t, fake.Sent())
 		return
 	}
 
@@ -313,5 +315,19 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 	waitSession(t, "payout", cs, func() bool { return len(fake.Broadcasts()) == 1 })
 	if len(fake.Spends()) != players*2 {
 		t.Fatal("gameplay requested an on-chain spend")
+	}
+}
+
+// noRepeatedFrames fails if any seat asked the bridge to send the same frame
+// twice. Bison Relay delivers each accepted message to peers that were away.
+func noRepeatedFrames(t *testing.T, frames []*gamingpb.Frame) {
+	t.Helper()
+	seen := map[string]bool{}
+	for _, f := range frames {
+		k := f.GetFrom() + "\x00" + f.GetFrame()
+		if seen[k] {
+			t.Fatalf("%s sent the same frame again: %.120s", f.GetFrom(), f.GetFrame())
+		}
+		seen[k] = true
 	}
 }

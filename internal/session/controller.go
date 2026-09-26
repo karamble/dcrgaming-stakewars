@@ -558,7 +558,17 @@ func (c *Controller) prepareWorld(ctx context.Context, rec sdk.TableRecord) erro
 	if problem != "" {
 		return errors.New(problem)
 	}
-	if e = c.runtime.Send(ctx, rec.Match, "w.world", own, gw.ClassDurable); e != nil {
+	// Bison Relay delivers what it accepted to peers that were away, so the
+	// agreement goes out once per match, never again on a later tick.
+	sent := worldSentKey(rec.Match)
+	if _, e = c.reservations.Get(sent); errors.Is(e, os.ErrNotExist) {
+		if e = c.runtime.Send(ctx, rec.Match, "w.world", own, gw.ClassDurable); e != nil {
+			return e
+		}
+		if _, e = c.reservations.Create(sent, h[:]); e != nil {
+			return e
+		}
+	} else if e != nil {
 		return e
 	}
 	if !all {
@@ -691,6 +701,9 @@ func (c *Controller) publishHead(match string, m *liveMatch) {
 	}
 }
 
+func worldSentKey(match string) [32]byte {
+	return sha256.Sum256([]byte("StakeWars/world-sent/v1/" + match))
+}
 func receiptKey(match string) [32]byte {
 	return sha256.Sum256([]byte("StakeWars/payout-receipt/v1/" + match))
 }
