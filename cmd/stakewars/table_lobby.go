@@ -59,6 +59,10 @@ func (g *game) updateTableLobby() {
 		if g.tableState.Closed && inpututil.IsKeyJustPressed(ebiten.KeyB) {
 			_ = g.session.Action("bond")
 		}
+		if g.tableState.Closable() && (inpututil.IsKeyJustPressed(ebiten.KeyC) || (click && p.In(render.TableCloseRect))) {
+			_ = g.session.Action("close")
+			return
+		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyTab) && len(g.sessionView.Tables) > 1 {
 			for i, s := range g.sessionView.Tables {
 				if s.Record.Match == g.sessionView.Match {
@@ -119,7 +123,7 @@ func (g *game) updateTableLobby() {
 	if t.Demo {
 		count := int(t.Invite.Seats)
 		if p.In(render.TableDemoNextRect) {
-			g.tableDemoScenario = (g.tableDemoScenario + 1) % 7
+			g.tableDemoScenario = (g.tableDemoScenario + 1) % 8
 		}
 		if p.In(render.TableDemoSizeRect) {
 			count += 2

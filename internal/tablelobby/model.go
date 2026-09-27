@@ -4,6 +4,8 @@ package tablelobby
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 )
 
@@ -16,6 +18,10 @@ const (
 	Confirming
 	Verified
 	Rejected
+	// PaidOut is a stake the table's payout spent; Locked is a bond still
+	// under its own lock after the match.
+	PaidOut
+	Locked
 )
 
 type Payment struct {
@@ -24,6 +30,9 @@ type Payment struct {
 	// Checked means the local verifier checked the expected script, value and
 	// unspent output. A peer announcement must never set it.
 	Checked bool
+	// UnlockHeight is the first block a Locked bond can be recovered in, 0
+	// when unknown.
+	UnlockHeight uint32
 }
 
 func (p Payment) Complete() bool {
@@ -48,6 +57,13 @@ func (p Payment) Label() string {
 		return fmt.Sprintf("Confirming · %d/%d blocks", p.Confirmations, p.Required)
 	case Rejected:
 		return "Output rejected · review required"
+	case PaidOut:
+		return "Paid out · spent by the table's payout"
+	case Locked:
+		if p.UnlockHeight > 0 {
+			return fmt.Sprintf("Locked until block %d · recover in dcrpulse", p.UnlockHeight)
+		}
+		return "Locked · recover in dcrpulse after its lock"
 	default:
 		return "Not requested"
 	}
@@ -121,6 +137,34 @@ type Table struct {
 	Status, Error              string
 	RefundStatus               string
 	CanFund, Ready             bool
+	// Finished is a match whose play is over, and Winner its winning seat, -1
+	// for a draw. Payout says how far the payout has come: proposing, signing,
+	// published or confirmed; Settlement is its txid once confirmed.
+	Finished           bool
+	Winner             int
+	Payout, Settlement string
+}
+
+// SeatStatus is a seat's card line. A finished match names its result rather
+// than the funding step a spent stake would otherwise fall back to.
+func (t Table) SeatStatus(i int) string {
+	if t.Finished {
+		switch {
+		case t.Winner < 0:
+			return "DRAW"
+		case t.Winner == i:
+			return "WINNER"
+		default:
+			return "MATCH FINISHED"
+		}
+	}
+	return t.Seats[i].Status()
+}
+
+// Closable reports whether the table can be put away: its payout confirmed,
+// or it closed for recovery.
+func (t Table) Closable() bool {
+	return t.Live && (t.Closed || (t.Finished && t.Payout == "confirmed"))
 }
 
 func New(inv bridgeconn.Invitation) Table {
@@ -147,6 +191,10 @@ func (t Table) Counts() (joined, funded int) {
 func (t Table) Stage() int {
 	if !t.Reviewed {
 		return 0
+	}
+	// A finished match has passed every step; its signed journal says so.
+	if t.Finished {
+		return 8
 	}
 	if t.Stale || !t.Connected || !t.ChainKnown {
 		return 1
@@ -195,6 +243,9 @@ func (t Table) Stage() int {
 	return 7
 }
 func (t Table) Guidance() (string, string) {
+	if t.Finished {
+		return t.finishedGuidance()
+	}
 	if t.Live {
 		if t.Error != "" {
 			return t.Status, t.Error
@@ -254,6 +305,32 @@ func (t Table) Guidance() (string, string) {
 		return "Preparation verified in this demo", "This is a UI example. It cannot start a paid match or move funds."
 	}
 }
+
+// finishedGuidance names the result and follows the payout to the chain.
+func (t Table) finishedGuidance() (string, string) {
+	title := "Match finished · draw"
+	if t.Winner >= 0 {
+		title = fmt.Sprintf("Match finished · Player %d won", t.Winner+1)
+	}
+	switch t.Payout {
+	case "confirmed":
+		return title, fmt.Sprintf("Payout %s confirmed. C closes the table; recover your admission bond in dcrpulse once its lock ends.", shortTxID(t.Settlement))
+	case "published":
+		return title, "The payout left escrow; dcrpulse has not recorded it yet."
+	case "signing":
+		return title, "Every player signs the payout in dcrpulse. No other payment is needed."
+	default:
+		return title, "Proposing the payout to dcrpulse. No other payment is needed."
+	}
+}
+
+func shortTxID(txid string) string {
+	if len(txid) > 16 {
+		return txid[:16] + "…"
+	}
+	return txid
+}
+
 func DCR(atoms uint64) string { return fmt.Sprintf("%d.%08d", atoms/100000000, atoms%100000000) }
 
 // Demo constructs explicit, disconnected UI fixtures, never bridge observations.
@@ -304,6 +381,17 @@ func Demo(seats, scenario int) Table {
 		t.Stale = true
 		t.Connected = false
 		t.ChainKnown = false
+	case 7:
+		// The match ended and its payout confirmed.
+		t.WorldVerified = true
+		t.Finished = true
+		t.Winner = 1
+		t.Payout = "confirmed"
+		t.Settlement = strings.Repeat("5eed", 16)
+		for i := range t.Seats {
+			t.Seats[i].Stake = Payment{Phase: PaidOut, Checked: true}
+		}
+		t.Seats[0].Admission = Payment{Phase: Locked, Checked: true, UnlockHeight: 1102120}
 	}
 	return t
 }

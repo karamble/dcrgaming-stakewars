@@ -33,6 +33,11 @@ func (g *game) pollSession() {
 		g.bridgeNotice = v.Status
 	}
 	if v.Match == "" {
+		// The last live table was closed; the room goes back to waiting for
+		// an invitation.
+		if g.tableState != nil && g.tableState.Live {
+			g.tableState = nil
+		}
 		return
 	}
 	for _, s := range v.Tables {
@@ -56,6 +61,13 @@ func (g *game) pollSession() {
 		t.Error = v.Error
 		t.CanFund = v.CanFund
 		t.Ready = v.Head != nil
+		t.Finished = v.Phase == "finished"
+		t.Winner = -1
+		if v.Head != nil {
+			t.Winner = int(v.Head.Winner)
+		}
+		t.Payout = v.Payout
+		t.Settlement = v.Settlement
 		for seat, key := range s.Seats {
 			if int(seat) >= len(t.Seats) {
 				continue
@@ -107,6 +119,18 @@ func (g *game) pollSession() {
 				p.Phase = tablelobby.Verified
 			case "missing", "mismatch":
 				p.Phase = tablelobby.Rejected
+			}
+			// After the match its stakes leave escrow in the payout, which
+			// is what spending, spent and missing then mean; its bond keeps
+			// its own lock and is recovered in dcrpulse.
+			if t.Finished && d.Purpose == "stake" && (d.Check == "spending" || d.Check == "spent" || d.Check == "missing") {
+				p = tablelobby.Payment{Phase: tablelobby.PaidOut, Checked: true}
+			}
+			if t.Finished && d.Purpose == "seatbond" && d.Check == "verified" {
+				p = tablelobby.Payment{Phase: tablelobby.Locked, Checked: true}
+				if v.Height > 0 && d.Confirmations > 0 {
+					p.UnlockHeight = uint32(int64(v.Height) + 1 - d.Confirmations + int64(r.Terms.BondLockBlocks))
+				}
 			}
 			if d.Purpose == "stake" {
 				t.Seats[seat].Stake = p

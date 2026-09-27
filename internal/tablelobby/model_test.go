@@ -1,6 +1,7 @@
 package tablelobby
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
@@ -73,6 +74,73 @@ func TestBondCardLabelShowsConfirmationProgress(t *testing.T) {
 	p.Confirmations = 2
 	if got := p.BondCardLabel(); got != "BOND VERIFIED · 2/2 CONFIRMATIONS" {
 		t.Fatalf("verified label = %q", got)
+	}
+}
+
+func TestFinishedTableNamesItsResult(t *testing.T) {
+	table := Demo(2, 7)
+	if table.Stage() != 8 {
+		t.Fatalf("finished stage = %d, want 8", table.Stage())
+	}
+	table.Stale = true
+	if table.Stage() != 8 {
+		t.Fatal("stale chain checks took a finished match back to funding")
+	}
+	title, body := table.Guidance()
+	if title != "Match finished · Player 2 won" {
+		t.Fatalf("title = %q", title)
+	}
+	if !strings.HasPrefix(body, "Payout 5eed5eed5eed5eed… confirmed.") {
+		t.Fatalf("confirmed payout guidance = %q", body)
+	}
+	if table.SeatStatus(1) != "WINNER" || table.SeatStatus(0) != "MATCH FINISHED" {
+		t.Fatalf("seat lines = %q / %q", table.SeatStatus(0), table.SeatStatus(1))
+	}
+	table.Winner = -1
+	if title, _ = table.Guidance(); title != "Match finished · draw" || table.SeatStatus(0) != "DRAW" {
+		t.Fatalf("draw = %q / %q", title, table.SeatStatus(0))
+	}
+	for payout, want := range map[string]string{
+		"published": "left escrow",
+		"signing":   "signs the payout",
+		"proposing": "Proposing the payout",
+	} {
+		table.Payout = payout
+		if _, body = table.Guidance(); !strings.Contains(body, want) {
+			t.Errorf("%s: guidance %q", payout, body)
+		}
+	}
+}
+
+func TestPaidOutStakeIsNeverRejected(t *testing.T) {
+	paid := Payment{Phase: PaidOut, Checked: true}
+	if got := paid.Label(); got != "Paid out · spent by the table's payout" {
+		t.Fatalf("paid-out label = %q", got)
+	}
+	if got := (Payment{Phase: Locked, UnlockHeight: 1120857}).Label(); got != "Locked until block 1120857 · recover in dcrpulse" {
+		t.Fatalf("locked label = %q", got)
+	}
+	if got := (Payment{Phase: Locked}).Label(); got != "Locked · recover in dcrpulse after its lock" {
+		t.Fatalf("locked label without a height = %q", got)
+	}
+}
+
+func TestOnlyAPaidOutOrClosedLiveTableCloses(t *testing.T) {
+	table := Demo(2, 7)
+	if table.Closable() {
+		t.Fatal("a demo table can be closed")
+	}
+	table.Live = true
+	if !table.Closable() {
+		t.Fatal("a paid-out table cannot be closed")
+	}
+	table.Payout = "published"
+	if table.Closable() {
+		t.Fatal("a table closes before its payout confirmed")
+	}
+	table.Finished, table.Closed = false, true
+	if !table.Closable() {
+		t.Fatal("a table closed for recovery cannot be put away")
 	}
 }
 

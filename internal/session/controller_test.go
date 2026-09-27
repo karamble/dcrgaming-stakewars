@@ -15,6 +15,7 @@ import (
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/gamingpb"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/transport"
 	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
+	"github.com/karamble/dcrgaming-stakewars/internal/durable"
 	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
 	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
@@ -310,6 +311,10 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 	if len(fake.Broadcasts()) != 0 {
 		t.Fatal("payout occurred before dashboard approval")
 	}
+	// The ledger keeps answering from before the payout, as dcrpulse does until
+	// it sees the payout confirm: the stakes are gone from the chain but still
+	// confirmed there. A finished match must not ask for them again.
+	fake.HoldDeposits(true)
 	if err := fake.SetPayoutVerdict(bridgetest.Approve); err != nil {
 		t.Fatal(err)
 	}
@@ -317,12 +322,94 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 	if len(fake.Spends()) != players*2 {
 		t.Fatal("gameplay requested an on-chain spend")
 	}
+	waitSession(t, "stakes gone before the ledger saw it", cs, func() bool {
+		for _, c := range cs {
+			if ownStakeCheck(c.Snapshot()) != "missing" {
+				return false
+			}
+		}
+		return true
+	})
+	for _, c := range cs {
+		if v := c.Snapshot(); v.Phase != "finished" || v.Payout != "published" || v.CanFund || strings.Contains(v.Status, "fund") {
+			t.Fatalf("finished match fell back to its stakes: phase=%s payout=%s status=%q canFund=%v", v.Phase, v.Payout, v.Status, v.CanFund)
+		}
+	}
+	fake.HoldDeposits(false)
+	waitSession(t, "payout seen", cs, func() bool {
+		for _, c := range cs {
+			if c.Snapshot().Payout != "confirmed" {
+				return false
+			}
+		}
+		return true
+	})
+	for _, c := range cs {
+		if e := c.Action("close"); e != nil {
+			t.Fatal(e)
+		}
+	}
+	waitSession(t, "tables put away", cs, func() bool {
+		for _, c := range cs {
+			if c.Snapshot().Match != "" {
+				return false
+			}
+		}
+		return true
+	})
+}
+
+// ownStakeCheck is the check of this seat's own stake on the foreground table.
+func ownStakeCheck(v View) string {
+	for _, s := range v.Tables {
+		if s.Record.Match != v.Match {
+			continue
+		}
+		for _, d := range s.Deposits {
+			if d.Purpose == "stake" && d.Seat == uint32(v.Mine) {
+				return d.Check
+			}
+		}
+	}
+	return ""
 }
 
 func TestNoWorldIsBuiltBeforeTheSeatingBlock(t *testing.T) {
 	err := (&Controller{}).prepareWorld(context.Background(), sdk.TableRecord{Match: "abcdef01"})
 	if err == nil || err.Error() != "Waiting for the seating block" {
 		t.Fatalf("world without a seating block: %v", err)
+	}
+}
+
+func TestPayoutProgressFollowsOwnStake(t *testing.T) {
+	for _, tc := range []struct{ id, own, want string }{
+		{"", "verified", "proposing"},
+		{"p1", "verified", "signing"},
+		{"p1", "spending", "published"},
+		{"p1", "missing", "published"},
+		{"p1", "unavailable", "signing"},
+	} {
+		if got := payoutProgress(tc.id, tc.own); got != tc.want {
+			t.Errorf("payout %q, own stake %q: %s, want %s", tc.id, tc.own, got, tc.want)
+		}
+	}
+}
+
+func TestATableClosesOnlyWhenNothingIsLeftToDo(t *testing.T) {
+	store, err := durable.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := &Controller{reservations: store, selected: "m1"}
+	if err = c.close(View{Match: "m1", Payout: "mempool"}); err == nil || c.concluded("m1") {
+		t.Fatal("a table closed before its payout confirmed")
+	}
+	if err = c.close(View{Match: "m1", Payout: "confirmed"}); err != nil || !c.concluded("m1") || c.selected != "" {
+		t.Fatalf("paid-out table: %v, concluded %v, selected %q", err, c.concluded("m1"), c.selected)
+	}
+	recovery := View{Match: "m2", Tables: []sdk.TableSnapshot{{Record: sdk.TableRecord{Match: "m2", RecoveryOnly: true}}}}
+	if err = c.close(recovery); err != nil || !c.concluded("m2") {
+		t.Fatalf("table closed for recovery: %v", err)
 	}
 }
 

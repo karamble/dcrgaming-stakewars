@@ -18,6 +18,7 @@ var TableBackRect = image.Rect(48, 115, 235, 150)
 
 var TableRefundRect = image.Rect(48, 840, 260, 877)
 var TableBondRefundRect = image.Rect(280, 840, 500, 877)
+var TableCloseRect = image.Rect(700, 840, 976, 877)
 var TableReviewRect = image.Rect(1020, 784, 1376, 834)
 var TableTermsRect = image.Rect(1010, 302, 1185, 340)
 var TableSeatTabRect = image.Rect(1190, 302, 1376, 340)
@@ -123,10 +124,18 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 		tag = "INTERACTIVE UX DEMO · FICTIONAL PLAYERS"
 	}
 	c.Text(tag, 50, 210, 12, Mint)
-	if t.Stale || !t.Connected || !t.ChainKnown {
+	switch {
+	case t.Finished:
+		c.Text("MATCH FINISHED", 1010, 180, 16, Mint)
+		result := "DRAW · EQUAL SHARES"
+		if t.Winner >= 0 {
+			result = fmt.Sprintf("WINNER · PLAYER %d", t.Winner+1)
+		}
+		c.Text(result, 1010, 207, 12, Muted)
+	case t.Stale || !t.Connected || !t.ChainKnown:
 		c.Text("CURRENT STATUS UNVERIFIED", 1010, 180, 16, tableAmber)
 		c.Text("WAITING FOR FRESH LOCAL CHECKS", 1010, 207, 12, Muted)
-	} else {
+	default:
 		c.Text(fmt.Sprintf("%d/%d PLAYERS VERIFIED", joined, t.Invite.Seats), 1010, 180, 16, White)
 		c.Text(fmt.Sprintf("%d/%d FUNDING CHECKS COMPLETE", funded, t.Invite.Seats), 1010, 207, 12, Muted)
 	}
@@ -144,7 +153,7 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 		if i == stage {
 			col = tableAmber
 		}
-		if t.Stale && i > 0 {
+		if t.Stale && !t.Finished && i > 0 {
 			col = Muted
 		}
 		c.Rect(x, 249, 156, 4, col)
@@ -198,19 +207,19 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 			c.Line(x+float64(r.Dx())-48, y+83, x+float64(r.Dx())-32, y+83, 2, Muted)
 			c.Line(x+float64(r.Dx())-40, y+75, x+float64(r.Dx())-40, y+91, 2, Muted)
 		}
-		status := s.Status()
+		status := t.SeatStatus(i)
 		statusCol := tableAmber
-		if (!s.Joined || !s.Admission.Complete()) && s.Admission.BondCardLabel() != "" {
+		if !t.Finished && (!s.Joined || !s.Admission.Complete()) && s.Admission.BondCardLabel() != "" {
 			status = s.Admission.BondCardLabel()
 		}
-		if !s.Joined {
+		if !s.Joined || status == "MATCH FINISHED" {
 			statusCol = Muted
 		}
-		if t.Stale {
+		if t.Stale && !t.Finished {
 			status = "RECHECK REQUIRED"
 			statusCol = tableAmber
 		}
-		if s.Status() == "FUNDS VERIFIED" && !t.Stale {
+		if (status == "FUNDS VERIFIED" || status == "WINNER" || status == "DRAW") && !t.Stale {
 			statusCol = Mint
 		}
 		c.Text(status, x+17, y+74, 11, statusCol)
@@ -221,7 +230,7 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 			}
 			bx := x + 17 + float64(j)*float64(r.Dx()-34)/3
 			pc := Muted
-			if p.Complete() && !t.Stale {
+			if (p.Complete() || p.Phase == tablelobby.PaidOut) && !t.Stale {
 				pc = Mint
 			} else if p.Phase != tablelobby.Unknown {
 				pc = tableAmber
@@ -253,11 +262,21 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 		if t.Ready {
 			label = "ENTER · JOIN THE BATTLE"
 		}
+		if t.Ready && t.Finished {
+			label = "ENTER · VIEW THE RESULT"
+		}
 		tableButton(c, TableReviewRect, label, t.CanFund || t.Ready, v)
 		if t.Closed {
 			tableButton(c, TableRefundRect, "R · REFUND STAKE", false, v)
 			tableButton(c, TableBondRefundRect, "B · REFUND ENTRY", false, v)
 			c.Text(shortTableText(t.RefundStatus, 155), 48, 884, 11, Muted)
+		}
+		if t.Finished || t.Closed {
+			label := "C · CLOSE TABLE"
+			if !t.Closable() {
+				label = "CLOSES ONCE PAID OUT"
+			}
+			tableButton(c, TableCloseRect, label, t.Closable(), v)
 		}
 		c.Text("TAB · NEXT TABLE", 540, 852, 11, Muted)
 	} else if !t.Reviewed && !t.Demo {
@@ -266,7 +285,9 @@ func drawTableRoom(c Canvas, v View, t tablelobby.Table) {
 		c.Rect(1020, 784, 356, 50, Panel)
 		c.Text("JOIN & FUND · UNAVAILABLE", 1036, 802, 14, Muted)
 	}
-	if t.Live {
+	if t.Finished {
+		c.Text("Bonds are recovered in dcrpulse", 1022, 747, 12, Muted)
+	} else if t.Live {
 		c.Text("Payments need approval in dcrpulse", 1022, 747, 12, Muted)
 	} else {
 		c.Text("Review only · no payment requested", 1022, 747, 12, Muted)
@@ -346,14 +367,20 @@ func drawSeatDetails(c Canvas, t tablelobby.Table, index int) {
 		y := 438 + float64(j)*78
 		c.Text([]string{"01  ADMISSION BOND", "02  MATCH STAKE", "03  TABLE BOND"}[j], x, y, 12, White)
 		label := p.Label()
-		if t.Stale {
+		labelCol := tableAmber
+		if t.Stale && !t.Finished {
 			label = "Recheck required after reconnect"
+		} else if p.Complete() || p.Phase == tablelobby.PaidOut {
+			labelCol = Mint
 		}
-		c.Text(label, x, y+23, 12, tableAmber)
+		c.Text(label, x, y+23, 12, labelCol)
 		c.Rect(x, y+47, 321, 3, Navy)
 		progress := 0.0
 		if p.Checked && p.Required > 0 && !t.Stale {
 			progress = math.Min(1, float64(p.Confirmations)/float64(p.Required))
+		}
+		if p.Phase == tablelobby.PaidOut {
+			progress = 1
 		}
 		c.Rect(x, y+47, 321*progress, 3, Mint)
 	}

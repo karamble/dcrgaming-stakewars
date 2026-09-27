@@ -47,6 +47,9 @@ type View struct {
 	WorldAgreed                      bool
 	Height                           uint32
 	Tables                           []sdk.TableSnapshot
+	// Payout follows a finished match's payout: proposing, signing,
+	// published or confirmed.
+	Payout string
 }
 type turnCommand struct {
 	Match  string
@@ -280,7 +283,31 @@ func (c *Controller) action(ctx context.Context, a string) {
 		c.job(ctx, v.Match, "fund", func(ctx context.Context) error { return c.runtime.Fund(ctx, v.Match) })
 	case "refund", "bond":
 		c.setError(errors.New("Manage this deposit in dcrpulse → Gaming → Recovery"))
+	case "close":
+		c.setError(c.close(v))
 	}
+}
+
+// close puts away the foreground table once nothing is left for the game to
+// do: its payout confirmed, or it closed for recovery. Deposits stay in
+// dcrpulse either way.
+func (c *Controller) close(v View) error {
+	closed := false
+	for _, s := range v.Tables {
+		if s.Record.Match == v.Match {
+			closed = s.Record.RecoveryOnly || s.Record.Aborted
+		}
+	}
+	if v.Payout != "confirmed" && !closed {
+		return errors.New("a table closes once its payout confirms")
+	}
+	if err := c.reservations.Put(concludedKey(v.Match), []byte{1}); err != nil {
+		return err
+	}
+	if c.selected == v.Match {
+		c.selected = ""
+	}
+	return nil
 }
 func (c *Controller) refresh(ctx context.Context) {
 	records, e := c.tables.LoadTables()
@@ -300,7 +327,10 @@ func (c *Controller) refresh(ctx context.Context) {
 	if selected == "" {
 		var latest uint32
 		for _, rec := range records {
-			if !rec.RecoveryOnly && !rec.Aborted && (selected == "" || rec.Terms.Until > latest) {
+			if rec.RecoveryOnly || rec.Aborted || c.concluded(rec.Match) {
+				continue
+			}
+			if selected == "" || rec.Terms.Until > latest {
 				selected, latest = rec.Match, rec.Terms.Until
 			}
 		}
@@ -342,6 +372,7 @@ func (c *Controller) refresh(ctx context.Context) {
 		if readErr == nil {
 			v.Settlement = string(receipt)
 			v.Phase = "finished"
+			v.Payout = "confirmed"
 			v.Status = "Payout broadcast · " + v.Settlement
 			c.mu.Lock()
 			if m := c.matches[rec.Match]; m != nil {
@@ -398,14 +429,20 @@ func (c *Controller) refresh(ctx context.Context) {
 		if m.settled != "" {
 			v.Head = m.journal.Head()
 			v.Phase = "finished"
+			v.Payout = "confirmed"
 			v.Settlement = m.settled
 			v.Status = "Payout broadcast · " + m.settled
 			continue
 		}
-		count := 0
+		count, own := 0, ""
 		for _, d := range snap.Deposits {
+			if d.Purpose != "stake" {
+				continue
+			}
+			if uint32(m.mine) == d.Seat {
+				own = d.Check
+			}
 			switch {
-			case d.Purpose != "stake":
 			case d.Check == "verified":
 				count++
 			case d.Check == "spent" && uint32(m.mine) == d.Seat:
@@ -420,8 +457,21 @@ func (c *Controller) refresh(ctx context.Context) {
 		if m.settled != "" {
 			v.Head = m.journal.Head()
 			v.Phase = "finished"
+			v.Payout = "confirmed"
 			v.Settlement = m.settled
 			v.Status = "Payout broadcast · " + m.settled
+			continue
+		}
+		// The journal decides that play is over, never the stakes: once the
+		// payout moves them they read spending, spent or missing, and none of
+		// that asks for a stake again.
+		if head := m.journal.Head(); head.Phase == sim.Ended {
+			m.funded = true
+			v.Head = head
+			v.Phase = "finished"
+			v.Payout = payoutProgress(snap.Record.PayoutID, own)
+			v.Status = "Match finished · " + finishedStatus[v.Payout]
+			c.settleFinished(ctx, rec, head)
 			continue
 		}
 		if c.runtime.PayoutFor(rec.Match) == "" {
@@ -449,29 +499,6 @@ func (c *Controller) refresh(ctx context.Context) {
 		v.Head = m.journal.Head()
 		v.Phase = "playing"
 		v.Status = "Playing · signed turns over Bison Relay"
-		v.Settlement = m.settled
-		if v.Head.Phase == sim.Ended {
-			v.Phase = "finished"
-			v.Status = "Match finished · collecting payout signatures"
-			manifest, e := seating.Preset(rec.Terms.Seats, rec.Terms.BuyInAtoms)
-			if e != nil {
-				c.setError(e)
-				continue
-			}
-			amounts, e := manifest.Payout.Allocation(v.Head.Winner)
-			if e != nil {
-				c.setError(e)
-				continue
-			}
-			out := sdk.Outcome{Shares: map[uint32]int64{}}
-			for seat, a := range amounts {
-				out.Shares[uint32(seat)] = a
-			}
-			c.rules.mu.Lock()
-			c.rules.allowed[rec.Match] = true
-			c.rules.mu.Unlock()
-			c.job(ctx, rec.Match, "settle", func(ctx context.Context) error { return c.runtime.Settle(ctx, rec.Match, out) })
-		}
 	}
 	c.mu.Lock()
 	v.Error = c.view.Error
@@ -488,6 +515,59 @@ func (c *Controller) refresh(ctx context.Context) {
 	}
 	c.rules.mu.Unlock()
 }
+
+// settleFinished asks the runtime to settle an ended match on the result its
+// journal holds. The job runs once; a failed one is retried on a later tick.
+func (c *Controller) settleFinished(ctx context.Context, rec sdk.TableRecord, head *sim.State) {
+	manifest, e := seating.Preset(rec.Terms.Seats, rec.Terms.BuyInAtoms)
+	if e != nil {
+		c.setError(e)
+		return
+	}
+	amounts, e := manifest.Payout.Allocation(head.Winner)
+	if e != nil {
+		c.setError(e)
+		return
+	}
+	out := sdk.Outcome{Shares: map[uint32]int64{}}
+	for seat, a := range amounts {
+		out.Shares[uint32(seat)] = a
+	}
+	c.rules.mu.Lock()
+	c.rules.allowed[rec.Match] = true
+	c.rules.mu.Unlock()
+	c.job(ctx, rec.Match, "settle", func(ctx context.Context) error { return c.runtime.Settle(ctx, rec.Match, out) })
+}
+
+// finishedStatus words each step of a finished match's payout.
+var finishedStatus = map[string]string{
+	"proposing": "proposing the payout",
+	"signing":   "collecting payout signatures",
+	"published": "payout published",
+}
+
+// payoutProgress says how far a finished match's payout has come, from its
+// proposal and this seat's own stake: the one deposit the local ledger tracks.
+// The node keeps reporting a stake until the payout spending it is mined, so a
+// stake gone from the chain left in the payout, whether or not the ledger has
+// recorded that yet.
+func payoutProgress(payoutID, ownStake string) string {
+	switch {
+	case ownStake == "spending" || ownStake == "missing":
+		return "published"
+	case payoutID != "":
+		return "signing"
+	default:
+		return "proposing"
+	}
+}
+
+// concluded reports whether the player closed this table.
+func (c *Controller) concluded(match string) bool {
+	_, err := c.reservations.Get(concludedKey(match))
+	return err == nil
+}
+
 func (c *Controller) prepareWorld(ctx context.Context, rec sdk.TableRecord) error {
 	c.mu.Lock()
 	existing := c.matches[rec.Match]
@@ -711,4 +791,7 @@ func worldSentKey(match string) [32]byte {
 }
 func receiptKey(match string) [32]byte {
 	return sha256.Sum256([]byte("StakeWars/payout-receipt/v1/" + match))
+}
+func concludedKey(match string) [32]byte {
+	return sha256.Sum256([]byte("StakeWars/concluded/v1/" + match))
 }

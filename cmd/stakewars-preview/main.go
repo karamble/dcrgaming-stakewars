@@ -18,7 +18,7 @@ func main() {
 	coverPreview := flag.Bool("cover", false, "preview the opening cover")
 	tablePreview := flag.Bool("table-lobby", false, "preview a fictional table lobby")
 	liveTable := flag.Bool("live-table", false, "preview the SDK lobby layout with fictional data")
-	tableStage := flag.Int("table-stage", 2, "demo stage 0..6")
+	tableStage := flag.Int("table-stage", 2, "demo stage 0..7; 7 is a finished, paid-out match")
 	tableSeats := flag.Int("table-seats", 4, "demo player count: 2, 4, 6")
 	tableSelected := flag.Int("table-player", -1, "show player details instead of terms")
 	victory := flag.Bool("victory", false, "preview a fictional victory screen")
@@ -112,12 +112,19 @@ func main() {
 			t.Live = true
 			t.Demo = false
 			t.WorldVerified = true
-			t.CanFund = true
-			t.Status = fmt.Sprintf("Battlefield agreed · 0/%d stakes confirmed", t.Invite.Seats)
-			t.RefundStatus = "Stake: not funded. Entry refund: 1998 blocks remaining."
 			for i := range t.Seats {
 				t.Seats[i].BondOptional = true
-				t.Seats[i].Stake = tablelobby.Payment{}
+			}
+			if t.Finished {
+				t.Ready = true
+				t.Status = "Payout broadcast · " + t.Settlement
+			} else {
+				t.CanFund = true
+				t.Status = fmt.Sprintf("Battlefield agreed · 0/%d stakes confirmed", t.Invite.Seats)
+				t.RefundStatus = "Stake: not funded. Entry refund: 1998 blocks remaining."
+				for i := range t.Seats {
+					t.Seats[i].Stake = tablelobby.Payment{}
+				}
 			}
 		}
 		v.TableLobby = render.TableLobbyView{Open: true, Table: &t, Selected: *tableSelected}
