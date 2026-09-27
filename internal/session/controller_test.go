@@ -14,6 +14,7 @@ import (
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/connect"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/gamingpb"
 	"github.com/karamble/dcrgaming-sdk/pkg/gaming/transport"
+	sdk "github.com/karamble/dcrgaming-sdk/pkg/runtime"
 	"github.com/karamble/dcrgaming-stakewars/pkg/replay"
 	"github.com/karamble/dcrgaming-stakewars/pkg/sim"
 )
@@ -315,6 +316,13 @@ func cooperativeMatch(t *testing.T, players int, refunds bool) {
 	waitSession(t, "payout", cs, func() bool { return len(fake.Broadcasts()) == 1 })
 	if len(fake.Spends()) != players*2 {
 		t.Fatal("gameplay requested an on-chain spend")
+	}
+}
+
+func TestNoWorldIsBuiltBeforeTheSeatingBlock(t *testing.T) {
+	err := (&Controller{}).prepareWorld(context.Background(), sdk.TableRecord{Match: "abcdef01"})
+	if err == nil || err.Error() != "Waiting for the seating block" {
+		t.Fatalf("world without a seating block: %v", err)
 	}
 }
 

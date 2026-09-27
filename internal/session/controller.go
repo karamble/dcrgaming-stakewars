@@ -508,6 +508,11 @@ func (c *Controller) prepareWorld(ctx context.Context, rec sdk.TableRecord) erro
 		}
 		return nil
 	}
+	// The beacon is the seating block's hash, so there is none until that
+	// block exists.
+	if rec.Beacon == "" {
+		return errors.New("Waiting for the seating block")
+	}
 	tip, e := c.runtime.Chain(ctx)
 	if e != nil {
 		return e
