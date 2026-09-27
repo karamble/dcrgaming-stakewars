@@ -151,7 +151,7 @@ type Table struct {
 	CanFund, Ready             bool
 	// Finished is a match whose play is over, and Winner its winning seat, -1
 	// for a draw. Payout says how far the payout has come: proposing, signing,
-	// published or confirmed; Settlement is its txid once confirmed.
+	// mempool, published or confirmed; Settlement is its txid once confirmed.
 	Finished           bool
 	Winner             int
 	Payout, Settlement string
@@ -327,6 +327,8 @@ func (t Table) finishedGuidance() (string, string) {
 	switch t.Payout {
 	case "confirmed":
 		return title, fmt.Sprintf("Payout %s confirmed. C closes the table; recover your admission bond in dcrpulse once its lock ends.", shortTxID(t.Settlement))
+	case "mempool":
+		return title, "The payout is in the mempool and confirms with the next block, usually within a few minutes."
 	case "published":
 		return title, "The payout left escrow; dcrpulse has not recorded it yet."
 	case "signing":

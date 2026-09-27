@@ -123,6 +123,7 @@ func TestFinishedTableNamesItsResult(t *testing.T) {
 		t.Fatalf("draw = %q / %q", title, table.SeatStatus(0))
 	}
 	for payout, want := range map[string]string{
+		"mempool":   "in the mempool",
 		"published": "left escrow",
 		"signing":   "signs the payout",
 		"proposing": "Proposing the payout",

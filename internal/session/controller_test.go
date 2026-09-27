@@ -385,12 +385,15 @@ func TestPayoutProgressFollowsOwnStake(t *testing.T) {
 	for _, tc := range []struct{ id, own, want string }{
 		{"", "verified", "proposing"},
 		{"p1", "verified", "signing"},
-		{"p1", "spending", "published"},
+		{"p1", "spending", "mempool"},
 		{"p1", "missing", "published"},
 		{"p1", "unavailable", "signing"},
 	} {
 		if got := payoutProgress(tc.id, tc.own); got != tc.want {
 			t.Errorf("payout %q, own stake %q: %s, want %s", tc.id, tc.own, got, tc.want)
+		}
+		if finishedStatus[tc.want] == "" {
+			t.Errorf("%s has no words", tc.want)
 		}
 	}
 }

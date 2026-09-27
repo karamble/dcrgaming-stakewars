@@ -543,17 +543,19 @@ func (c *Controller) settleFinished(ctx context.Context, rec sdk.TableRecord, he
 var finishedStatus = map[string]string{
 	"proposing": "proposing the payout",
 	"signing":   "collecting payout signatures",
+	"mempool":   "payout in mempool",
 	"published": "payout published",
 }
 
 // payoutProgress says how far a finished match's payout has come, from its
 // proposal and this seat's own stake: the one deposit the local ledger tracks.
-// The node keeps reporting a stake until the payout spending it is mined, so a
-// stake gone from the chain left in the payout, whether or not the ledger has
-// recorded that yet.
+// The bridge reports that stake spending while the payout waits in the
+// mempool; a stake gone from the chain before the ledger saw it was mined.
 func payoutProgress(payoutID, ownStake string) string {
 	switch {
-	case ownStake == "spending" || ownStake == "missing":
+	case ownStake == "spending":
+		return "mempool"
+	case ownStake == "missing":
 		return "published"
 	case payoutID != "":
 		return "signing"
