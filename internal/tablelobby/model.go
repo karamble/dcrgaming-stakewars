@@ -92,6 +92,18 @@ func (p Payment) BondCardLabel() string {
 	}
 }
 
+// stakeCardLabel is a seat's stake status: paid once the local check found its
+// output, which sits in the mempool until its first block.
+func (p Payment) stakeCardLabel() string {
+	if (p.Phase != Confirming && p.Phase != Verified) || !p.Checked || p.Required == 0 {
+		return "WAITING FOR STAKE"
+	}
+	if p.Confirmations == 0 {
+		return "STAKE PAID · IN MEMPOOL"
+	}
+	return fmt.Sprintf("STAKE PAID · %d/%d CONFIRMATIONS", p.Confirmations, p.Required)
+}
+
 type Seat struct {
 	Name                                      string
 	Ours, Joined, IdentityVerified, Committed bool
@@ -113,7 +125,7 @@ func (s Seat) Status() string {
 		return "AGREEING ROSTER"
 	}
 	if !s.Stake.Complete() {
-		return "WAITING FOR STAKE"
+		return s.Stake.stakeCardLabel()
 	}
 	if !s.BondOptional && !s.Bond.Complete() {
 		return "WAITING FOR TABLE BOND"

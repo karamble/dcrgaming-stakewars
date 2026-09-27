@@ -77,6 +77,28 @@ func TestBondCardLabelShowsConfirmationProgress(t *testing.T) {
 	}
 }
 
+func TestSeatShowsAStakeInTheMempool(t *testing.T) {
+	seat := Seat{Joined: true, IdentityVerified: true, Committed: true, BondOptional: true, Admission: Payment{Phase: Verified, Checked: true, Confirmations: 2, Required: 2}}
+	for _, c := range []struct {
+		stake Payment
+		want  string
+	}{
+		{Payment{}, "WAITING FOR STAKE"},
+		{Payment{Phase: Announced, Required: 1}, "WAITING FOR STAKE"},
+		{Payment{Phase: Confirming, Required: 1}, "WAITING FOR STAKE"},
+		{Payment{Phase: Confirming, Checked: true}, "WAITING FOR STAKE"},
+		{Payment{Phase: Confirming, Checked: true, Required: 1}, "STAKE PAID · IN MEMPOOL"},
+		{Payment{Phase: Confirming, Checked: true, Confirmations: 1, Required: 2}, "STAKE PAID · 1/2 CONFIRMATIONS"},
+		{Payment{Phase: Verified, Checked: true, Confirmations: 1, Required: 2}, "STAKE PAID · 1/2 CONFIRMATIONS"},
+		{Payment{Phase: Verified, Checked: true, Confirmations: 1, Required: 1}, "FUNDS VERIFIED"},
+	} {
+		seat.Stake = c.stake
+		if got := seat.Status(); got != c.want {
+			t.Errorf("stake %+v: status = %q, want %q", c.stake, got, c.want)
+		}
+	}
+}
+
 func TestFinishedTableNamesItsResult(t *testing.T) {
 	table := Demo(2, 7)
 	if table.Stage() != 8 {
