@@ -77,6 +77,20 @@ func TestBondCardLabelShowsConfirmationProgress(t *testing.T) {
 	}
 }
 
+func TestDCRRendersEveryAmountExactly(t *testing.T) {
+	for atoms, want := range map[uint64]string{
+		0:               "0.00000000",
+		10_000_000:      "0.10000000",
+		123_456_789_012: "1234.56789012",
+		21e14 - 1:       "20999999.99999999",
+		21e14:           "21000000.00000000",
+	} {
+		if got := DCR(atoms); got != want {
+			t.Errorf("DCR(%d) renders %q, want %q", atoms, got, want)
+		}
+	}
+}
+
 func TestSeatShowsAStakeInTheMempool(t *testing.T) {
 	seat := Seat{Joined: true, IdentityVerified: true, Committed: true, BondOptional: true, Admission: Payment{Phase: Verified, Checked: true, Confirmations: 2, Required: 2}}
 	for _, c := range []struct {

@@ -6,9 +6,11 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+
+	"github.com/decred/dcrd/dcrutil/v4"
 )
 
-const MaxAtoms int64 = 21_000_000 * 100_000_000
+const MaxAtoms int64 = dcrutil.MaxAmount
 
 // Policy has one row for each possible sole-winning seat, followed by a draw
 // row. Each row explicitly assigns the entire gross pot across all seats.

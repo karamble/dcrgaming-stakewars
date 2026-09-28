@@ -17,6 +17,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
+	"github.com/karamble/dcrgaming-stakewars/internal/tablelobby"
 	"github.com/karamble/dcrgaming-stakewars/pkg/render"
 )
 
@@ -386,7 +387,7 @@ func (g *game) bridgeLobbyView() render.BridgeLobbyView {
 	if inv := g.bridgeInvite; inv != nil {
 		v.Terms = []string{
 			"SESSION " + inv.SID,
-			fmt.Sprintf("%d seats · %d.%08d DCR per seat", inv.Seats, inv.BuyInAtoms/100000000, inv.BuyInAtoms%100000000),
+			fmt.Sprintf("%d seats · %s DCR per seat", inv.Seats, tablelobby.DCR(inv.BuyInAtoms)),
 			fmt.Sprintf("Refund delay: %d blocks", inv.CSVBlocks),
 			fmt.Sprintf("Admission deadline: block %d", inv.Until),
 		}

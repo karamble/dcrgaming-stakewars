@@ -4,7 +4,10 @@ package tablelobby
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+
+	"github.com/decred/dcrd/dcrutil/v4"
 
 	"github.com/karamble/dcrgaming-stakewars/internal/bridgeconn"
 )
@@ -345,7 +348,11 @@ func shortTxID(txid string) string {
 	return txid
 }
 
-func DCR(atoms uint64) string { return fmt.Sprintf("%d.%08d", atoms/100000000, atoms%100000000) }
+// DCR renders atoms with all eight decimals, exact for every amount that can
+// exist.
+func DCR(atoms uint64) string {
+	return strconv.FormatFloat(dcrutil.Amount(atoms).ToCoin(), 'f', 8, 64)
+}
 
 // Demo constructs explicit, disconnected UI fixtures, never bridge observations.
 func Demo(seats, scenario int) Table {
